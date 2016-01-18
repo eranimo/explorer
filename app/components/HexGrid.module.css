@@ -1,0 +1,65 @@
+.canvasContainer {
+    border: 1px solid black;
+}
+
+.hexmap {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+}
+
+.minimap {
+    width: 200px;
+    height: 200px;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    border: 1px solid black;
+}
+
+.minimapPart {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+}
+
+.controls {
+    background-color: rgba(0, 0, 0, 0.3);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.6);
+    padding: 15px;
+    color: white;
+    position: absolute;
+    height: 50px;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+}
+
+.control {
+    color: rgba(200, 200, 200, 0.8);
+}
+
+.control > select {
+    margin-left: 10px;
+    background-color: rgba(100, 100, 100, 0.1);
+    color: white;
+    border: 0;
+    outline: 1px solid rgba(0, 0, 0, 0.6);
+    outline-offset: -1px;
+    border-radius: 0;
+}
+
+.sidebar {
+    position: absolute;
+    background-color: rgba(0, 0, 0, 0.3);
+    border-right: 1px solid rgba(0, 0, 0, 0.6);
+    top: 50px;
+    padding: 15px;
+    bottom: 0;
+    left: 0;
+    width: 300px;
+    z-index: 1000;
+    pointer-events: none;
+}

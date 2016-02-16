@@ -26,7 +26,10 @@ class MapPage extends Component {
   render() {
     return (
       <div>
-        <HexGridControl hexes={this.props.world.hexes} details={this.props.world.details}/>
+        <HexGridControl hexes={this.props.world.hexes}
+          details={this.props.world.details}
+          geoforms={this.props.world.geoforms}
+        />
       </div>
     );
   }

@@ -690,9 +690,31 @@ class WorldMap {
       //   ctx.stroke();
       //   ctx.closePath();
       // }
-
-      ctx.lineWidth = 2;
+      const selectedHex = this.functions.getSelectedHex();
+      if (selectedHex && selectedHex.id === hex.id) {
+        ctx.beginPath();
+        ctx.lineCap = 'round';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([5, 10]);
+        ctx.strokeStyle = 'rgb(0, 0, 0)';
+        const width = 1;
+        ctx.moveTo(origin[0], origin[1] + width);
+        ctx.lineTo(pointer_1[0] - width, pointer_1[1]);
+        ctx.moveTo(pointer_1[0] - width, pointer_1[1]);
+        ctx.lineTo(pointer_2[0] - width, pointer_2[1]);
+        ctx.moveTo(pointer_2[0] - width, pointer_2[1]);
+        ctx.lineTo(pointer_3[0], pointer_3[1] - width);
+        ctx.moveTo(pointer_3[0], pointer_3[1] - width);
+        ctx.lineTo(pointer_4[0] + width, pointer_4[1]);
+        ctx.moveTo(pointer_4[0] + width, pointer_4[1]);
+        ctx.lineTo(pointer_5[0] + width, pointer_5[1]);
+        ctx.moveTo(pointer_5[0] + width, pointer_5[1]);
+        ctx.lineTo(origin[0], origin[1] + width);
+        ctx.stroke();
+        ctx.closePath();
+      }
       ctx.beginPath();
+      ctx.setLineDash([0, 0]);
       // north east
       if (hex.edges.north_east.is_coast && view.borders) {
         ctx.lineWidth = 2;

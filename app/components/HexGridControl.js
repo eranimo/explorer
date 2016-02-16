@@ -9,6 +9,7 @@ import SelectedHex from './SelectedHex';
 class HexGridControl extends Component {
   static propTypes = {
     hexes: PropTypes.array,
+    geoforms: PropTypes.array,
     details: PropTypes.object,
   };
 
@@ -42,7 +43,7 @@ class HexGridControl extends Component {
   }
 
   render() {
-    const { hexes, details } = this.props;
+    const { hexes, details, geoforms } = this.props;
     if (hexes) {
       const mapViews = _.toArray(MAPVIEWS).map((v) => {
         return (<option key={v.name} value={v.map}>{v.title}</option>);
@@ -51,7 +52,9 @@ class HexGridControl extends Component {
       if (this.state.selectedHex) {
         selectedHex = (
           <div className={styles.sidebar}>
-            <SelectedHex hex={this.state.selectedHex} />
+            <SelectedHex hex={this.state.selectedHex}
+              geoforms={geoforms}
+            />
           </div>
         );
       }

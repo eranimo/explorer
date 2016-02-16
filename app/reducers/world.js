@@ -6,7 +6,8 @@ export default function counter(state = {}, action) {
       return {
         ...state,
         details: action.data.details,
-        hexes: action.data.hexes
+        hexes: action.data.hexes,
+        geoforms: action.data.geoforms
       };
     case GET_HEX:
       return {

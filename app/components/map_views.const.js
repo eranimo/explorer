@@ -8,6 +8,16 @@ export const satellite = {
   colors: false
 };
 
+export const biome = {
+  name: 'biome',
+  title: 'Biomes',
+  map: 'biome',
+  borders: false,
+  rivers: true,
+  territories: false,
+  colors: false
+};
+
 export const terrain = {
   name: 'terrain',
   title: 'Terrain',

@@ -3,12 +3,16 @@ import _ from 'lodash';
 
 class SelectedHex extends Component {
   static propTypes = {
-    hex: PropTypes.object
+    hex: PropTypes.object,
+    geoforms: PropTypes.array
   };
 
   render() {
-    const { hex } = this.props;
+    const { hex, geoforms } = this.props;
     console.log('selected', hex);
+    let geoform = _.find(geoforms, { id: hex.geoform });
+    console.log(geoform);
+    geoform = geoform && geoform.type || 'None';
     return (
       <div>
         <div>X: {hex.x}</div>
@@ -19,6 +23,8 @@ class SelectedHex extends Component {
         <div>Moisture Rating: {hex.moisture} units</div>
         <div>Is coastal: {_.some(hex.edges, 'is_coast') ? 'Yes' : 'No'}</div>
         <div>Has river: {_.some(hex.edges, 'is_river') ? 'Yes' : 'No'}</div>
+        <hr />
+        <div>Geoform: {geoform}</div>
       </div>
     );
   }

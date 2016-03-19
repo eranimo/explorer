@@ -1,0 +1,16 @@
+.Header {
+  background-color: #222;
+  border-bottom: 2px solid #111;
+  height: 50px;
+  line-height: 50px;
+}
+
+.Link {
+  padding: 1rem;
+  color: #C0C0C0;
+}
+
+.Link__active {
+  color: white;
+  font-weight: bold;
+}

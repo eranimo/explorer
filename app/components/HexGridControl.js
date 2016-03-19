@@ -6,6 +6,11 @@ import * as MAPVIEWS from './map_views.const';
 import HexGrid from './HexGrid';
 import SelectedHex from './SelectedHex';
 
+
+const Divider = function (){
+  return <div className={styles.divider}></div>
+}
+
 class HexGridControl extends Component {
   static propTypes = {
     hexes: PropTypes.array,
@@ -62,11 +67,65 @@ class HexGridControl extends Component {
         <div>
           <div className={styles.controls}>
             <label className={styles.control}>
-              Map View:
+              <span>Map View:</span>
               <select onChange={this.updateMapView.bind(this)}>
                 {mapViews}
               </select>
             </label>
+
+            <Divider />
+
+            <label className={styles.control}>
+              <span>Play</span>
+              <button type="button">
+                <i className="fa fa-play"></i>
+              </button>
+            </label>
+
+            <Divider />
+
+            <label className={styles.control}>
+              <span>Last Day</span>
+              <button type="button">
+                <i className="fa fa-arrow-left"></i>
+              </button>
+            </label>
+
+            <label className={styles.control}>
+              <span>Current Day:</span>
+              <div>January 1, 0001</div>
+            </label>
+
+            <label className={styles.control}>
+              <span>Next Day</span>
+              <button type="button">
+                <i className="fa fa-arrow-right"></i>
+              </button>
+            </label>
+
+            <Divider />
+
+            <label className={styles.control}>
+              <span>Slower</span>
+              <button type="button">
+                <i className="fa fa-backward"></i>
+              </button>
+            </label>
+
+            <label className={styles.control}>
+              <span>Speed:</span>
+              <div>0</div>
+            </label>
+
+            <label className={styles.control}>
+              <span>Faster</span>
+              <button type="button">
+                <i className="fa fa-forward"></i>
+              </button>
+            </label>
+
+            <Divider />
+
           </div>
           {selectedHex}
           <HexGrid hexes={hexes}

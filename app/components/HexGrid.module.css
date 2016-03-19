@@ -4,7 +4,7 @@
 
 .hexmap {
     position: absolute;
-    top: 0;
+    top: 50px;
     left: 0;
     bottom: 0;
     right: 0;
@@ -26,36 +26,70 @@
 }
 
 .controls {
-    background-color: rgba(0, 0, 0, 0.3);
+    background-color: rgba(50, 50, 50, 0.8);
     border-bottom: 1px solid rgba(0, 0, 0, 0.6);
-    padding: 15px;
     color: white;
     position: absolute;
     height: 50px;
     left: 0;
     right: 0;
     z-index: 1000;
+    display: flex;
 }
 
 .control {
-    color: rgba(200, 200, 200, 0.8);
+    color: #DDD;
+    font-size: 10px;
+    flex-direction: column;
+    width: auto;
+    padding: 5px 0.5rem;
+    text-align: center;
+}
+
+.divider {
+    border-right: 1px solid rgba(0, 0, 0, 0.6);
+    margin: 0 5px;
+}
+
+.control > button {
+    color: gray;
+    background: none;
+    border: none;
+    font-size: 20px;
+    margin: 0;
+    cursor: pointer;
+}
+.control > button:hover {
+    color: white;
+}
+
+.control > div {
+    line-height: 25px;
+    font-size: 14px;
+    color: lightgray;
+}
+
+.control > span {
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 3px;
 }
 
 .control > select {
-    margin-left: 10px;
-    background-color: rgba(100, 100, 100, 0.1);
+    background-color: rgba(200, 200, 200, 0.2);
+    -webkit-appearance: none;
+    padding: 4px;
+    text-align-last: center;
     color: white;
-    border: 0;
-    outline: 1px solid rgba(0, 0, 0, 0.6);
-    outline-offset: -1px;
-    border-radius: 0;
+    border: 1px solid rgba(0, 0, 0, 0.6);
+    border-radius: 3px;
 }
 
 .sidebar {
     position: absolute;
     background-color: rgba(0, 0, 0, 0.3);
     border-right: 1px solid rgba(0, 0, 0, 0.6);
-    top: 50px;
+    top: 100px;
     padding: 15px;
     bottom: 0;
     left: 0;

@@ -3,9 +3,11 @@ import _ from 'lodash';
 
 export const LOAD_WORLD_DATA = 'LOAD_WORLD_DATA';
 export const GET_HEX = 'GET_HEX';
+export const SELECT_DAY = 'SELECT_DAY';
 
 export function loadData() {
-  let data = fs.readFileSync('/Users/kaelan/www/hexgen/bin/export.json');
+  //let data = fs.readFileSync('/Users/kaelan/www/hexgen/bin/export3.json');
+  let data = fs.readFileSync('/Users/kaelan/www/historia/bin/export.json');
   data = JSON.parse(data.toString());
 
   return {
@@ -21,5 +23,12 @@ export function getHex(x, y) {
       type: GET_HEX,
       data: world.hexes[x][y]
     };
+  };
+}
+
+export function selectDay(day) {
+  return {
+    type: SELECT_DAY,
+    day
   };
 }

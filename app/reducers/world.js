@@ -2,6 +2,9 @@ import { LOAD_WORLD_DATA, GET_HEX, SELECT_DAY } from '../actions/world';
 import moment from 'moment';
 import _ from 'lodash';
 
+// import { Country, Pop, Hex, Province, CLASS_MAP, construct } from '../models/base';
+import { CLASSES, construct } from '../models';
+
 const INITIAL_STATE = {};
 
 const DAY_FORMAT = 'YYYY-MM-DD';
@@ -44,6 +47,28 @@ function processDay(timeline, worldData, currentDay) {
       changeActions[change.action](newWorldData, change);
     }
   }
+  // // newWorldData.Country = _.mapValues(newWorldData.Country, (model) => {
+  // //   return new Country(model, newWorldData);
+  // // });
+  // // newWorldData.Pop = _.mapValues(newWorldData.Pop, (model) => {
+  // //   return new Pop(model, newWorldData);
+  // // });
+  // // newWorldData.Hex = _.mapValues(newWorldData.Hex, (model) => {
+  // //   return new Hex(model, newWorldData);
+  // // });
+  // // newWorldData.Province = _.mapValues(newWorldData.Province, (model) => {
+  // //   return new Province(model, newWorldData);
+  // // });
+  //
+  _.map(CLASSES, (classConstructor, key) => {
+    newWorldData[key] = _.mapValues(newWorldData[key], (model) => {
+      return construct(classConstructor(), key, [model, newWorldData]);
+    });
+  });
+  // newWorldData.Country = _.mapValues(newWorldData.Country, (model) => {
+  //   return new Country(model, newWorldData);
+  // });
+  console.log(newWorldData);
   return newWorldData;
 }
 

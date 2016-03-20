@@ -31,6 +31,7 @@ class MapPage extends Component {
         <Header />
         <HexGridControl hexes={this.props.world.hexes}
           details={this.props.world.details}
+          currentDay={this.props.world.currentDay}
           geoforms={this.props.world.geoforms}
         />
       </div>

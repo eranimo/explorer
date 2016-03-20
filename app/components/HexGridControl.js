@@ -14,6 +14,7 @@ const Divider = function (){
 class HexGridControl extends Component {
   static propTypes = {
     hexes: PropTypes.array,
+    currentDay: PropTypes.object,
     geoforms: PropTypes.array,
     details: PropTypes.object,
   };
@@ -48,7 +49,7 @@ class HexGridControl extends Component {
   }
 
   render() {
-    const { hexes, details, geoforms } = this.props;
+    const { hexes, details, geoforms, currentDay } = this.props;
     if (hexes) {
       const mapViews = _.toArray(MAPVIEWS).map((v) => {
         return (<option key={v.name} value={v.map}>{v.title}</option>);
@@ -130,6 +131,7 @@ class HexGridControl extends Component {
           {selectedHex}
           <HexGrid hexes={hexes}
             details={details}
+            currentDay={currentDay}
             mapView={this.state.mapView}
             selectHex={this.selectHex.bind(this)}
             deselectHex={this.deselectHex.bind(this)}

@@ -47,10 +47,12 @@ class WorldMap {
     panning: false
   };
 
-  constructor(hexes, mainCanvas, minimapCanvas, frameCanvas, mapView, functions) {
+  constructor(hexes, canvases, mapView, currentDay, functions) {
     this.size = hexes.length;
     this.setMapView(mapView);
     this.functions = functions;
+    const { mainCanvas, minimapCanvas, frameCanvas } = canvases;
+    this.countries = currentDay.Country;
     this.canvas = {
       elem: jQuery(mainCanvas),
       context: mainCanvas.getContext('2d')
@@ -975,17 +977,20 @@ class HexGrid extends Component {
     mapView: PropTypes.string,
     hexes: PropTypes.array,
     details: PropTypes.object,
+    currentDay: PropTypes.currentDay,
     selectHex: PropTypes.func,
     deselectHex: PropTypes.func,
     getSelectedHex: PropTypes.func
   };
 
   componentDidMount() {
-    const { hexes, mapView, selectHex, deselectHex, getSelectedHex } = this.props;
-    const hexmap = this.refs.hexmap;
-    const minimapImage = this.refs.minimapImage;
-    const minimapFrame = this.refs.minimapFrame;
-    this.worldMap = new WorldMap(hexes, hexmap, minimapImage, minimapFrame, mapView, {
+    const { hexes, mapView, selectHex, deselectHex, getSelectedHex, currentDay } = this.props;
+    const canvases = {
+      mainCanvas: this.refs.hexmap,
+      minimapCanvas: this.refs.minimapImage,
+      frameCanvas: this.refs.minimapFrame
+    };
+    this.worldMap = new WorldMap(hexes, canvases, mapView, currentDay, {
       selectHex,
       deselectHex,
       getSelectedHex
@@ -998,6 +1003,10 @@ class HexGrid extends Component {
   }
 
   render() {
+    const country = this.props.currentDay.Country['co-0b7855aaeb0b458ebc0a7c5e75c94b23'];
+    console.log('countries', country)
+    console.log('country capital', country.capital)
+    console.log('country capital owner', country.capital.owner)
     return (
       <div>
         <canvas ref="hexmap" className={styles.hexmap}></canvas>

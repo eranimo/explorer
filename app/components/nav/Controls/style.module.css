@@ -1,0 +1,61 @@
+.controls {
+    background-color: #1F1F1F;
+    border-bottom: 1px solid rgba(0, 0, 0, 1);
+    color: white;
+    position: absolute;
+    height: 50px;
+    top: 35px;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    display: flex;
+    line-height: 1;
+}
+
+.control {
+    color: #DDD;
+    font-size: 10px;
+    flex-direction: column;
+    width: auto;
+    padding: 5px 0.5rem;
+    text-align: center;
+}
+
+.divider {
+    border-right: 1px solid rgba(0, 0, 0, 1);
+    margin: 0 5px;
+}
+
+.control > button {
+    color: gray;
+    background: none;
+    border: none;
+    font-size: 20px;
+    margin: 0;
+    cursor: pointer;
+}
+.control > button:hover {
+    color: white;
+}
+
+.control > div {
+    line-height: 25px;
+    font-size: 14px;
+    color: lightgray;
+}
+
+.control > span {
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 3px;
+}
+
+.control > select {
+    background-color: rgba(200, 200, 200, 0.2);
+    -webkit-appearance: none;
+    padding: 4px;
+    text-align-last: center;
+    color: white;
+    border: 1px solid rgba(0, 0, 0, 0.6);
+    border-radius: 3px;
+}

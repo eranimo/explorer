@@ -4,7 +4,7 @@
 
 .hexmap {
     position: absolute;
-    top: 50px;
+    top: 75px;
     left: 0;
     bottom: 0;
     right: 0;
@@ -26,11 +26,12 @@
 }
 
 .controls {
-    background-color: rgba(50, 50, 50, 0.8);
+    background-color: rgba(27, 45, 53, 0.8);
     border-bottom: 1px solid rgba(0, 0, 0, 0.6);
     color: white;
     position: absolute;
     height: 50px;
+    top: 85px;
     left: 0;
     right: 0;
     z-index: 1000;
@@ -89,7 +90,7 @@
     position: absolute;
     background-color: rgba(0, 0, 0, 0.3);
     border-right: 1px solid rgba(0, 0, 0, 0.6);
-    top: 100px;
+    top: 135px;
     padding: 15px;
     bottom: 0;
     left: 0;

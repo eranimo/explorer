@@ -1,5 +1,5 @@
 import React, { Component, PropTypes } from 'react';
-import styles from './Statistics.module.css';
+import styles from './style.module.css';
 import _ from 'lodash';
 
 import { Treemap } from 'react-d3';

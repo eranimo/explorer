@@ -1,11 +1,8 @@
-import React, { Component, PropTypes } from 'react';
-import styles from './HexGrid.module.css';
 import _ from 'lodash';
 import jQuery from 'jquery';
-
 import * as MAPVIEWS from './map_views.const';
 
-var settings = {
+const settings = {
   border_color_width: 3,
   zoom: {
     min: 2.0,
@@ -14,7 +11,7 @@ var settings = {
   }
 };
 
-var color = {
+const color = {
   rivers: '21, 52, 60'
 };
 
@@ -30,7 +27,7 @@ function darken(_color, percent) {
   return r + ',' + g + ',' + b;
 }
 
-class WorldMap {
+export default class WorldMap {
 
   mapState = {
     coord: {
@@ -47,12 +44,13 @@ class WorldMap {
     panning: false
   };
 
-  constructor(hexes, canvases, mapView, currentDay, functions) {
+  constructor(hexes, canvases, mapView, currentDay, functions, mapDetails) {
     this.size = hexes.length;
     this.setMapView(mapView);
     this.functions = functions;
     const { mainCanvas, minimapCanvas, frameCanvas } = canvases;
     this.countries = currentDay.Country;
+    this.mapDetails = mapDetails;
     this.canvas = {
       elem: jQuery(mainCanvas),
       context: mainCanvas.getContext('2d')
@@ -586,6 +584,16 @@ class WorldMap {
     // }
   }
 
+  findProvince(hex) {
+    let found = false;
+    _.each(this.mapDetails.provinces, (province) => {
+      if (province.hex.x === hex.x && province.hex.y === hex.y) {
+        found = province;
+      }
+    });
+    return found;
+  }
+
   /**
    * Draws a specific hexagon on the world map
    * @param  {Number} x       X coordinate of hex origin
@@ -622,7 +630,13 @@ class WorldMap {
     } else {
       color = '0,0,0';
     }
-    ctx.fillStyle = 'rgb(' + color + ')';
+    const foundProvince = this.findProvince(hex);
+    if (foundProvince) {
+      ctx.fillStyle = foundProvince.owner.display.map_color;
+    } else {
+      ctx.fillStyle = 'rgb(' + color + ')';
+    }
+
     ctx.fill();
     ctx.stroke();
     const isHovering = this.hover_hex && this.hover_hex === hex;
@@ -659,6 +673,7 @@ class WorldMap {
     var hex = this.grid[cy][cx];
     if (hex !== null) {
       // var width = settings.border_color_width;
+
 
       // if (hex.province_color && view.borders) {
       //   ctx.beginPath();
@@ -797,6 +812,29 @@ class WorldMap {
 
       ctx.stroke();
       ctx.closePath();
+
+      const foundProvince = this.findProvince(hex);
+      if (foundProvince) {
+        ctx.beginPath();
+        ctx.lineCap = 'round';
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = foundProvince.owner.display.border_color;
+        const width = 1;
+        ctx.moveTo(origin[0], origin[1] + width);
+        ctx.lineTo(pointer_1[0] - width, pointer_1[1]);
+        ctx.moveTo(pointer_1[0] - width, pointer_1[1]);
+        ctx.lineTo(pointer_2[0] - width, pointer_2[1]);
+        ctx.moveTo(pointer_2[0] - width, pointer_2[1]);
+        ctx.lineTo(pointer_3[0], pointer_3[1] - width);
+        ctx.moveTo(pointer_3[0], pointer_3[1] - width);
+        ctx.lineTo(pointer_4[0] + width, pointer_4[1]);
+        ctx.moveTo(pointer_4[0] + width, pointer_4[1]);
+        ctx.lineTo(pointer_5[0] + width, pointer_5[1]);
+        ctx.moveTo(pointer_5[0] + width, pointer_5[1]);
+        ctx.lineTo(origin[0], origin[1] + width);
+        ctx.stroke();
+        ctx.closePath();
+      }
     }
   }
 
@@ -971,52 +1009,3 @@ class WorldMap {
     this.drawMinimapFrame();
   }
 }
-
-class HexGrid extends Component {
-  static propTypes = {
-    mapView: PropTypes.string,
-    hexes: PropTypes.array,
-    details: PropTypes.object,
-    currentDay: PropTypes.currentDay,
-    selectHex: PropTypes.func,
-    deselectHex: PropTypes.func,
-    getSelectedHex: PropTypes.func
-  };
-
-  componentDidMount() {
-    const { hexes, mapView, selectHex, deselectHex, getSelectedHex, currentDay } = this.props;
-    const canvases = {
-      mainCanvas: this.refs.hexmap,
-      minimapCanvas: this.refs.minimapImage,
-      frameCanvas: this.refs.minimapFrame
-    };
-    this.worldMap = new WorldMap(hexes, canvases, mapView, currentDay, {
-      selectHex,
-      deselectHex,
-      getSelectedHex
-    });
-  }
-
-  componentDidUpdate() {
-    this.worldMap.setMapView(this.props.mapView);
-    this.worldMap.drawAll();
-  }
-
-  render() {
-    const country = this.props.currentDay.Country['co-0b7855aaeb0b458ebc0a7c5e75c94b23'];
-    console.log('countries', country)
-    console.log('country capital', country.capital)
-    console.log('country capital owner', country.capital.owner)
-    return (
-      <div>
-        <canvas ref="hexmap" className={styles.hexmap}></canvas>
-        <div id="minimap" className={styles.minimap}>
-            <canvas ref="minimapImage" className={styles.minimapPart} width="200" height="200"></canvas>
-            <canvas ref="minimapFrame" className={styles.minimapPart} width="200" height="200"></canvas>
-        </div>
-      </div>
-    );
-  }
-}
-
-export default HexGrid;

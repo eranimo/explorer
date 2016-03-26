@@ -1,12 +1,13 @@
 .Header {
   background-color: #222;
-  border-bottom: 2px solid #111;
-  height: 50px;
-  line-height: 50px;
+  border-bottom: 1px solid #111;
+  height: 35px;
+  line-height: 35px;
+  margin-bottom: 30px;
 }
 
 .Link {
-  padding: 1rem;
+  padding: 0.7rem 1rem;
   color: #C0C0C0;
 }
 

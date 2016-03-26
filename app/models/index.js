@@ -7,15 +7,13 @@ function isIDString(value) {
 export const CLASSES = {
   Province: () => Province,
   Country: () => Country,
-  Pop: () => Pop,
-  Hex: () => Hex
+  Pop: () => Pop
 };
 
 export const KEYWORD_MAP = {
   'pr': { key: 'Province', className: () => Province },
   'co': { key: 'Country', className: () => Country },
-  'po': { key: 'Pop', className: () => Pop },
-  'he': { key: 'Hex', className: () => Hex }
+  'po': { key: 'Pop', className: () => Pop }
 };
 
 function namedFunction(name, args, body, scope, values) {
@@ -40,47 +38,56 @@ export function construct(constructor, name, args) {
   return new F();
 }
 
-function processIDString(context, model, keyword, value, key, currentDay) {
+function processIDString(context, model, keyword, value, key, worldInfo) {
   const foundClass = KEYWORD_MAP[keyword];
   Object.defineProperty(context, key, {
     get() {
-      return construct(foundClass.className(), foundClass.key, [context.findModel(foundClass.key, model[key]), currentDay]);
+      return construct(foundClass.className(), foundClass.key, [worldInfo.data[foundClass.key][model[key]], worldInfo]);
     },
     set(newValue) {
-      return construct(foundClass.className(), foundClass.key, [context.findModel(foundClass.key, newValue), currentDay]);
+      return construct(foundClass.className(), foundClass.key, [worldInfo.data[foundClass.key][newValue], worldInfo]);
     }
   });
 }
 
+function isEnum(value) {
+  return _.isObject(value) && value.type === 'enum';
+}
+
+function Enum(model) {
+  _.forEach(model, (value, key) => {
+    this[key] = value;
+  });
+}
+
+function processEnumObject(enums, enumObj) {
+  return new Enum(enums[enumObj.id][enumObj.key]);
+}
+
 export class Base {
-  constructor(model, currentDay) {
-    this.__currentDay = currentDay;
+  constructor(model, worldInfo) {
     _.forEach(model, (value, key) => {
       if (isIDString(value)) {
         const keyword = value.substr(0, 2);
-        processIDString(this, model, keyword, value, key, currentDay);
+        processIDString(this, model, keyword, value, key, worldInfo);
       } else if (_.isArray(value) && _.every(value, isIDString)) {
-        // this[key] = [];
-        // value.forEach((v, i) => {
-        //   const keyword = value[i].substr(0, 2);
-        //   processIDString(this[key], model, keyword, v, i, currentDay);
-        // });
+        this[key] = [];
+        value.forEach((v, i) => {
+          const keyword = value[i].substr(0, 2);
+          processIDString(this[key], model[key], keyword, v, i, worldInfo);
+        });
+      } else if (isEnum(value)) {
+        this[key] = processEnumObject(worldInfo.enums, value);
+      } else if (_.isObject(value) && value.x && value.y) {
+        this[key] = worldInfo.hexes[value.x][value.y];
       } else {
         this[key] = value;
       }
     });
-    // this.__model = model;
-  }
-  findModel(type, id) {
-    try {
-      return this.__currentDay[type][id];
-    } catch (e) {
-      throw Error('Cannot find ' + type + ' of ID ' + id);
-    }
+    this.__model = model;
   }
 }
 
 export class Province extends Base {}
 export class Country extends Base {}
 export class Pop extends Base {}
-export class Hex extends Base {}

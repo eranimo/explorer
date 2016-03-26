@@ -1,7 +1,7 @@
 import React, { Component, PropTypes } from 'react';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import Statistics from '../components/Statistics';
+import WorldStats from '../components/statistics/WorldStats';
 import Header from '../components/nav/Header';
 import * as WorldActions from '../actions/world';
 
@@ -34,7 +34,7 @@ class StatsPage extends Component {
     return (
       <div>
         <Header />
-        <Statistics world={this.props.world} />
+        <WorldStats world={this.props.world} />
       </div>
     );
   }

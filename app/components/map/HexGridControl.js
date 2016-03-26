@@ -7,14 +7,14 @@ import HexGrid from './HexGrid';
 import SelectedHex from './SelectedHex';
 
 
-const Divider = function (){
+const Divider = function Divider() {
   return <div className={styles.divider}></div>
-}
+};
 
 class HexGridControl extends Component {
   static propTypes = {
     hexes: PropTypes.array,
-    currentDay: PropTypes.object,
+    dayData: PropTypes.object,
     geoforms: PropTypes.array,
     details: PropTypes.object,
   };
@@ -49,7 +49,7 @@ class HexGridControl extends Component {
   }
 
   render() {
-    const { hexes, details, geoforms, currentDay } = this.props;
+    const { hexes, details, geoforms, dayData } = this.props;
     if (hexes) {
       const mapViews = _.toArray(MAPVIEWS).map((v) => {
         return (<option key={v.name} value={v.map}>{v.title}</option>);
@@ -58,7 +58,9 @@ class HexGridControl extends Component {
       if (this.state.selectedHex) {
         selectedHex = (
           <div className={styles.sidebar}>
-            <SelectedHex hex={this.state.selectedHex}
+            <SelectedHex
+              hex={this.state.selectedHex}
+              dayData={dayData}
               geoforms={geoforms}
             />
           </div>
@@ -75,63 +77,12 @@ class HexGridControl extends Component {
             </label>
 
             <Divider />
-
-            <label className={styles.control}>
-              <span>Play</span>
-              <button type="button">
-                <i className="fa fa-play"></i>
-              </button>
-            </label>
-
-            <Divider />
-
-            <label className={styles.control}>
-              <span>Last Day</span>
-              <button type="button">
-                <i className="fa fa-arrow-left"></i>
-              </button>
-            </label>
-
-            <label className={styles.control}>
-              <span>Current Day:</span>
-              <div>January 1, 0001</div>
-            </label>
-
-            <label className={styles.control}>
-              <span>Next Day</span>
-              <button type="button">
-                <i className="fa fa-arrow-right"></i>
-              </button>
-            </label>
-
-            <Divider />
-
-            <label className={styles.control}>
-              <span>Slower</span>
-              <button type="button">
-                <i className="fa fa-backward"></i>
-              </button>
-            </label>
-
-            <label className={styles.control}>
-              <span>Speed:</span>
-              <div>0</div>
-            </label>
-
-            <label className={styles.control}>
-              <span>Faster</span>
-              <button type="button">
-                <i className="fa fa-forward"></i>
-              </button>
-            </label>
-
-            <Divider />
-
           </div>
           {selectedHex}
-          <HexGrid hexes={hexes}
+          <HexGrid
+            hexes={hexes}
             details={details}
-            currentDay={currentDay}
+            dayData={dayData}
             mapView={this.state.mapView}
             selectHex={this.selectHex.bind(this)}
             deselectHex={this.deselectHex.bind(this)}

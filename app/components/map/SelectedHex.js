@@ -4,6 +4,7 @@ import _ from 'lodash';
 class SelectedHex extends Component {
   static propTypes = {
     hex: PropTypes.object,
+    currentDay: PropTypes.currentDay,
     geoforms: PropTypes.array
   };
 
@@ -15,6 +16,7 @@ class SelectedHex extends Component {
     geoform = geoform && geoform.type || 'None';
     return (
       <div>
+        <div>ID: {hex.id}</div>
         <div>X: {hex.x}</div>
         <div>Y: {hex.y}</div>
         <div>Biome: {hex.biome.title}</div>

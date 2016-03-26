@@ -20,14 +20,17 @@ const MAX_SPEED = 3;
 
 const INITIAL_STATE = {
   currentDay: wrapDate('0001-01-01'),
-  speed: MIN_SPEED
+  speed: MIN_SPEED,
+  isPlaying: false
 };
+window.speed = MIN_SPEED;
 
 function limitBetween(low, high, value) {
-  return Math.max(Math.min(value, high), low)
+  return Math.max(Math.min(value, high), low);
 }
 
 export default function counter(state = INITIAL_STATE, action) {
+  let speed;
   switch (action.type) {
     case PLAY:
       return {
@@ -53,21 +56,18 @@ export default function counter(state = INITIAL_STATE, action) {
         currentDay: wrapDate(state.currentDay).add(1, 'day')
       };
     case SLOWER:
-      return {
-        ...state,
-        speed: limitBetween(MIN_SPEED, MAX_SPEED, state.speed - 1)
-      };
+      speed = limitBetween(MIN_SPEED, MAX_SPEED, state.speed - 1);
+      window.speed = speed;
+      return { ...state, speed };
     case FASTER:
-      return {
-        ...state,
-        speed: limitBetween(MIN_SPEED, MAX_SPEED, state.speed + 1)
-      };
+      speed = limitBetween(MIN_SPEED, MAX_SPEED, state.speed + 1);
+      window.speed = speed;
+      return { ...state, speed };
     case GET_DAY_DATA:
       const { timeline, data, enums, hexes } = action.data;
-      return {
-        ...state,
-        dayData: processDay(timeline, data, enums, hexes, state.currentDay)
-      };
+      const dayData = processDay(timeline, data, enums, hexes, state.currentDay);
+      console.log('day data', dayData);
+      return { ...state, dayData };
     default:
       return state;
   }

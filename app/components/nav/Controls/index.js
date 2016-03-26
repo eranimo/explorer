@@ -10,7 +10,8 @@ import * as TimeActions from '../../../actions/time';
 function mapStateToProps({ time }) {
   return {
     currentDay: time.currentDay,
-    speed: time.speed
+    speed: time.speed,
+    isPlaying: time.isPlaying
   };
 }
 
@@ -28,12 +29,19 @@ class Controls extends Component {
     const currentDay = this.props.currentDay.format('MMMM Do [Y]Y');
     return (
       <div className={styles.controls}>
-        <label className={styles.control}>
-          <span>Play</span>
-          <button type="button">
-            <i className="fa fa-play"></i>
-          </button>
-        </label>
+        {this.props.isPlaying ?
+          <label className={styles.control}>
+            <span>Play</span>
+            <button type="button" onClick={this.props.pause}>
+              <i className="fa fa-play"></i>
+            </button>
+          </label> :
+          <label className={styles.control}>
+            <span>Pause</span>
+            <button type="button" onClick={this.props.play}>
+              <i className="fa fa-pause"></i>
+            </button>
+          </label>}
 
         {divider}
 

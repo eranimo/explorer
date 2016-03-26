@@ -6,29 +6,12 @@ export const SLOWER = 'SLOWER';
 export const FASTER = 'FASTER';
 export const GET_DAY_DATA = 'GET_DAY_DATA';
 
-export function play() {
-  return { type: PLAY };
-}
 
-export function pause() {
-  return { type: PAUSE };
-}
-
-export function previousDay() {
-  return { type: PREV_DAY }
-}
-
-export function nextDay() {
-  return { type: NEXT_DAY }
-}
-
-export function slower() {
-  return { type: SLOWER }
-}
-
-export function faster() {
-  return { type: FASTER }
-}
+const SPEED_SECONDS = {
+  1: 1500,
+  2: 500,
+  3: 150
+};
 
 export function getDayData() {
   return (dispatch, getState) => {
@@ -37,5 +20,45 @@ export function getDayData() {
       type: GET_DAY_DATA,
       data: world
     });
+  };
+}
+
+export function pause() {
+  clearInterval(window.playInterval);
+  return { type: PAUSE };
+}
+
+export function previousDay() {
+  return (dispatch) => {
+    dispatch({ type: PREV_DAY });
+    dispatch(getDayData());
+  };
+}
+
+export function nextDay() {
+  return (dispatch) => {
+    dispatch({ type: NEXT_DAY });
+    dispatch(getDayData());
+  };
+}
+
+export function slower() {
+  return { type: SLOWER };
+}
+
+export function faster() {
+  return { type: FASTER };
+}
+
+
+export function play() {
+  return (dispatch) => {
+    dispatch({ type: PLAY });
+    function step() {
+      dispatch(nextDay());
+      dispatch(getDayData());
+      setTimeout(step, SPEED_SECONDS[window.speed]);
+    }
+    step();
   };
 }

@@ -39,8 +39,9 @@ function transformDaysToMoment(dayChanges) {
 }
 
 export default function processDay(timeline, worldData, enums, hexes, currentDay) {
+  console.groupCollapsed("Processing Day Changes");
   const currentDayObj = moment(currentDay, DAY_FORMAT);
-  //console.log('pre-changed world data', _.cloneDeep(worldData))
+  console.log('Pre-changed world data: %O', _.cloneDeep(worldData))
 
   const changesToday = _.zipWith(_.keys(timeline), _.values(timeline), (model, days) => {
     return {
@@ -51,7 +52,7 @@ export default function processDay(timeline, worldData, enums, hexes, currentDay
     };
   });
 
-  console.log('changes today', changesToday);
+  console.log('Changes today: %O', changesToday);
 
   // apply all changes to object model
   const newWorldData = _.cloneDeep(worldData);
@@ -59,14 +60,13 @@ export default function processDay(timeline, worldData, enums, hexes, currentDay
     days.forEach(({ modelChanges }) => {
       _.each(modelChanges, (changes, key) => {
         changes.forEach((change) => {
-          console.log(change);
           newWorldData[model][key] = changeActions[change.type](newWorldData[model][key], _.cloneDeep(change));
           // console.log(_.clone(newWorldData[model][key]))
         });
       });
     });
   });
-  console.log('post-changed world data', _.clone(newWorldData))
+  console.log('Post-changed world data: %O', _.clone(newWorldData))
 
   // instantiate classes
   _.map(CLASSES, (classConstructor, key) => {
@@ -75,6 +75,7 @@ export default function processDay(timeline, worldData, enums, hexes, currentDay
       return construct(classConstructor(), key, [model, { data: newWorldData, enums, hexes }]);
     });
   });
-  console.log('world data', newWorldData);
+  console.log('Post-instantiated world data;: %O', newWorldData);
+  console.groupEnd();
   return newWorldData;
 }

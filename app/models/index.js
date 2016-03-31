@@ -1,6 +1,6 @@
 import _ from 'lodash';
 
-function isIDString(value) {
+export function isIDString(value) {
   return _.isString(value) && value.length === 35 && value[2] === '-';
 }
 
@@ -38,15 +38,24 @@ export function construct(constructor, name, args) {
   return new F();
 }
 
-function processIDString(context, model, keyword, value, key, worldInfo) {
+export function processIDString(context, model, keyword, value, key, worldInfo) {
   const foundClass = KEYWORD_MAP[keyword];
   Object.defineProperty(context, key, {
     get() {
-      return construct(foundClass.className(), foundClass.key, [worldInfo.data[foundClass.key][model[key]], worldInfo]);
+      const newModel = worldInfo.data[foundClass.key][model[key]];
+      // if (_.isObject(newModel._model)) {
+      //   return newModel;
+      // }
+      return construct(foundClass.className(), foundClass.key, [newModel.__model, worldInfo, true]);
     },
     set(newValue) {
-      return construct(foundClass.className(), foundClass.key, [worldInfo.data[foundClass.key][newValue], worldInfo]);
-    }
+      const newModel = worldInfo.data[foundClass.key][newValue];
+      // if (newModel.__model) {
+      //   return newModel;
+      // }
+      return construct(foundClass.className(), foundClass.key, [newModel.__model, worldInfo]);
+    },
+    enumerable: true
   });
 }
 
@@ -66,15 +75,19 @@ function processEnumObject(enums, enumObj) {
 
 export class Base {
   constructor(model, worldInfo) {
-    _.forEach(model, (value, key) => {
+    this.__model = _.clone(model);
+    _.forEach(this.__model, (value, key) => {
+      if (key === '__model') {
+        return;
+      }
       if (isIDString(value)) {
         const keyword = value.substr(0, 2);
-        processIDString(this, model, keyword, value, key, worldInfo);
+        processIDString(this, this.__model, keyword, value, key, worldInfo);
       } else if (_.isArray(value) && _.every(value, isIDString)) {
         this[key] = [];
         value.forEach((v, i) => {
           const keyword = value[i].substr(0, 2);
-          processIDString(this[key], model[key], keyword, v, i, worldInfo);
+          processIDString(this[key], this.__model[key], keyword, v, i, worldInfo);
         });
       } else if (isEnum(value)) {
         this[key] = processEnumObject(worldInfo.enums, value);
@@ -84,7 +97,6 @@ export class Base {
         this[key] = value;
       }
     });
-    this.__model = model;
   }
 }
 

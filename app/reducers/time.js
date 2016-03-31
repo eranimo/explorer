@@ -65,6 +65,7 @@ export default function counter(state = INITIAL_STATE, action) {
       return { ...state, speed };
     case GET_DAY_DATA:
       const { timeline, data, enums, hexes } = action.data;
+      console.log('data', data)
       const dayData = processDay(timeline, data, enums, hexes, state.currentDay);
       console.log('day data', dayData);
       return { ...state, dayData };

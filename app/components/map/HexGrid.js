@@ -1,5 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 import styles from './HexGrid.module.css';
+import _ from 'lodash';
 
 import WorldMap from './WorldMap';
 
@@ -21,18 +22,26 @@ class HexGrid extends Component {
       minimapCanvas: this.refs.minimapImage,
       frameCanvas: this.refs.minimapFrame
     };
+
+    console.log('provinces', this.getMapDetails());
     this.worldMap = new WorldMap(hexes, canvases, mapView, dayData, {
       selectHex,
       deselectHex,
       getSelectedHex
-    }, {
-      provinces: this.props.dayData.Province
-    });
+    }, this.getMapDetails());
   }
 
   componentDidUpdate() {
+    this.worldMap.mapDetails = this.getMapDetails()
+    console.log('NEW DATA', _.clone(this.worldMap.mapDetails));
+
     this.worldMap.setMapView(this.props.mapView);
     this.worldMap.drawAll();
+  }
+
+  getMapDetails() {
+    const provinces = _.flatten(_.map(this.props.dayData.Country, (c) => c.provinces));
+    return { provinces };
   }
 
   render() {

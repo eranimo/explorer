@@ -57,7 +57,7 @@ export function play() {
     function step() {
       dispatch(nextDay());
       dispatch(getDayData());
-      setTimeout(step, SPEED_SECONDS[window.speed]);
+      window.playInterval = setTimeout(step, SPEED_SECONDS[window.speed]);
     }
     step();
   };

@@ -61,6 +61,7 @@ class HexGridControl extends Component {
             <SelectedHex
               hex={this.state.selectedHex}
               dayData={dayData}
+              deselect={this.deselectHex.bind(this)}
               geoforms={geoforms}
             />
           </div>

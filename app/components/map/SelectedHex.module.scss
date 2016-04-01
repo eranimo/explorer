@@ -4,6 +4,20 @@
 .TitleBar {
   padding: 0.5rem;
   font-size: 20px;
+
+  button {
+    background: none;
+    border: none;
+    color: #C0C0C0;
+    cursor: pointer;
+    font-size: 20px;
+
+    float: right;
+
+    &:hover {
+      color: white;
+    }
+  }
 }
 
 .SelectedHex {

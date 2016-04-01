@@ -8,7 +8,8 @@ class SelectedHex extends Component {
   static propTypes = {
     hex: PropTypes.object,
     dayData: PropTypes.object,
-    geoforms: PropTypes.array
+    geoforms: PropTypes.array,
+    deselect: PropTypes.func
   };
 
   getProvinceAtHex() {
@@ -73,11 +74,22 @@ class SelectedHex extends Component {
   }
 
   renderTitle () {
+    let title;
     if (!this.getProvinceAtHex()) {
       const hex = this.props.hex;
-      return `Hex at ${hex.x}, ${hex.y}`;
+      title = `Hex at ${hex.x}, ${hex.y}`;
+    } else {
+      title = 'Province';
     }
-    return 'Province';
+
+    return (
+      <div className={styles.TitleBar}>
+        {title}
+        <button type="button">
+          <i className="fa fa-times" onClick={this.props.deselect}></i>
+        </button>
+      </div>
+    )
   }
 
   render() {
@@ -85,7 +97,7 @@ class SelectedHex extends Component {
     if (!this.getProvinceAtHex()) {
       return (
         <div>
-          <div className={styles.TitleBar}>{this.renderTitle()}</div>
+          {this.renderTitle()}
           <Tabs className={styles.SelectedHex}>
             <TabList>
               <Tab>Hex</Tab>
@@ -98,7 +110,7 @@ class SelectedHex extends Component {
 
     return (
       <div>
-        <div className={styles.TitleBar}>{this.renderTitle()}</div>
+        {this.renderTitle()}
         <Tabs className={styles.SelectedHex}>
           <TabList>
             <Tab>Hex</Tab>

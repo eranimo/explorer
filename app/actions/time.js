@@ -52,6 +52,7 @@ export function faster() {
 }
 
 export function goToDay(day) {
+  console.log('day', day)
   return (dispatch) => {
     dispatch({ type: GO_TO_DAY, data: day });
     dispatch(getDayData());

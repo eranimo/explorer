@@ -73,7 +73,7 @@ export default function counter(state = INITIAL_STATE, action) {
       console.log(action.data)
       return {
         ...state,
-        currentDay: wrapDate(action.data).subtract(1, 'day')
+        currentDay: wrapDate(action.data)
       };
     default:
       return state;

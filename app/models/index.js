@@ -84,6 +84,10 @@ export class Base {
       if (key === '__model') {
         return;
       }
+      if (key === 'id') {
+        this[key] = value;
+        return;
+      }
       if (isEnum(value)) {
         this[key] = processEnumObject(worldInfo.enums, value);
       } else if (_.isObject(value) && value.x && value.y) {

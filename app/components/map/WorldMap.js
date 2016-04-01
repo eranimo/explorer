@@ -538,6 +538,20 @@ export default class WorldMap {
       }
     }
 
+    for (let i = visible.x1; i < visible.x2; ++i) {
+      for (let j = visible.y1; j < visible.y2; ++j) {
+        this.drawProvinceBorders(
+          i * this.HEXRECTWIDTH + ((j % 2) * this.HEXRADIUS),
+          j * (this.SIDELENGTH + this.HEXHEIGHT),
+          i,
+          j
+        );
+      }
+    }
+
+    // draw province borders
+
+    // draw selected hex
     const selectedHex = this.functions.getSelectedHex();
     if (selectedHex) {
       const coordinate = this.hexToCoordinate(selectedHex.x, selectedHex.y);
@@ -570,6 +584,103 @@ export default class WorldMap {
       ctx.stroke();
       ctx.closePath();
       ctx.setLineDash([0, 0]);
+    }
+  }
+
+  decideBorderWidth(province, side, ctx) {
+    const neighbors = province.hex.neighbors;
+    const ownerId = province.owner.id;
+    const foundHex = this.grid[neighbors[side].x][neighbors[side].y];
+    const foundProvince = this.findProvince(foundHex);
+
+    // border with wilderness
+    if (!foundProvince) {
+      ctx.lineWidth = this.r(3);
+      ctx.strokeStyle = province.owner.display.border_color;
+      ctx.setLineDash([1, 0]);
+      return 2;
+    }
+
+    // border with owned province
+    if (foundProvince.owner.id === ownerId) {
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = province.owner.display.border_color;
+      ctx.setLineDash([1, 0]);
+      return 0;
+    }
+
+    // border with foreigh province
+    ctx.lineWidth = this.r(3);
+    ctx.strokeStyle = province.owner.display.border_color;
+    ctx.setLineDash([1, 0]);
+    return 2;
+  }
+
+  drawProvinceBorders(originX, originY, cx, cy) {
+    const ctx = this.canvas.context;
+    const x = this.mapState.loc.x + originX;
+    const y = this.mapState.loc.y + originY;
+
+    let origin = [this.r(x + this.HEXRADIUS), this.r(y)];
+    let pointer_1 = [this.r(x) + this.r(this.HEXRECTWIDTH), this.r(y + this.HEXHEIGHT)];
+    let pointer_2 = [this.r(x) + this.r(this.HEXRECTWIDTH), this.r(y + this.HEXHEIGHT + this.SIDELENGTH)];
+    let pointer_3 = [this.r(x) + this.r(this.HEXRADIUS), this.r(y + this.HEXRECTHEIGHT)];
+    let pointer_4 = [this.r(x), this.r(y + this.SIDELENGTH + this.HEXHEIGHT)];
+    let pointer_5 = [this.r(x), this.r(y + this.HEXHEIGHT)];
+    let hex = this.grid[cy][cx];
+
+    const foundProvince = this.findProvince(hex);
+    if (foundProvince) {
+      let offset;
+
+      ctx.lineCap = 'rounded';
+      // north east
+      ctx.beginPath();
+      offset = this.decideBorderWidth(foundProvince, 'north_east', ctx);
+      ctx.moveTo(origin[0], origin[1] + offset);
+      ctx.lineTo(pointer_1[0] - offset, pointer_1[1]);
+      ctx.stroke();
+      ctx.closePath();
+
+      // east
+      ctx.beginPath();
+      offset = this.decideBorderWidth(foundProvince, 'east', ctx);
+      ctx.moveTo(pointer_1[0] - offset, pointer_1[1]);
+      ctx.lineTo(pointer_2[0] - offset, pointer_2[1]);
+      ctx.stroke();
+      ctx.closePath();
+
+      // south east
+      ctx.beginPath();
+      offset = this.decideBorderWidth(foundProvince, 'south_east', ctx);
+      ctx.moveTo(pointer_2[0] - offset, pointer_2[1]);
+      ctx.lineTo(pointer_3[0], pointer_3[1] - offset);
+      ctx.stroke();
+      ctx.closePath();
+
+      // south west
+      ctx.beginPath();
+      offset = this.decideBorderWidth(foundProvince, 'south_west', ctx);
+      ctx.moveTo(pointer_3[0], pointer_3[1] - offset);
+      ctx.lineTo(pointer_4[0] + offset, pointer_4[1]);
+      ctx.stroke();
+      ctx.closePath();
+
+      // west
+      ctx.beginPath();
+      offset = this.decideBorderWidth(foundProvince, 'west', ctx);
+      ctx.moveTo(pointer_4[0] + offset, pointer_4[1]);
+      ctx.lineTo(pointer_5[0] + offset, pointer_5[1]);
+      ctx.stroke();
+      ctx.closePath();
+
+      // north west
+      ctx.beginPath();
+      offset = this.decideBorderWidth(foundProvince, 'north_west', ctx);
+      ctx.moveTo(pointer_5[0] + offset, pointer_5[1]);
+      ctx.lineTo(origin[0], origin[1] + offset);
+      ctx.stroke();
+      ctx.closePath();
     }
   }
 
@@ -664,39 +775,6 @@ export default class WorldMap {
       // var width = settings.border_color_width;
 
 
-      // if (hex.province_color && view.borders) {
-      //   ctx.beginPath();
-      //   ctx.lineCap = 'round';
-      //   ctx.lineWidth = (settings.border_color_width + 1.5) / this.mapState.z;
-      //   ctx.strokeStyle = 'rgb(' + darken(hex.province_color, 30) + ')';
-      //   if (hex.border_north_east) {
-      //     ctx.moveTo(origin[0], origin[1] + width);
-      //     ctx.lineTo(pointer_1[0] - width, pointer_1[1]);
-      //   }
-      //   if (hex.border_east) {
-      //     ctx.moveTo(pointer_1[0] - width, pointer_1[1]);
-      //     ctx.lineTo(pointer_2[0] - width, pointer_2[1]);
-      //   }
-      //   if (hex.border_south_east) {
-      //     ctx.moveTo(pointer_2[0] - width, pointer_2[1]);
-      //     ctx.lineTo(pointer_3[0], pointer_3[1] - width);
-      //   }
-      //   if (hex.border_south_west) {
-      //     ctx.moveTo(pointer_3[0], pointer_3[1] - width);
-      //     ctx.lineTo(pointer_4[0] + width, pointer_4[1]);
-      //   }
-      //   if (hex.border_west) {
-      //     ctx.moveTo(pointer_4[0] + width, pointer_4[1]);
-      //     ctx.lineTo(pointer_5[0] + width, pointer_5[1]);
-      //   }
-      //   if (hex.border_north_west) {
-      //     ctx.moveTo(pointer_5[0] + width, pointer_5[1]);
-      //     ctx.lineTo(origin[0], origin[1] + width);
-      //   }
-      //   ctx.stroke();
-      //   ctx.closePath();
-      // }
-
       ctx.beginPath();
       // north east
       if (hex.edges.north_east.is_coast && view.borders) {
@@ -778,29 +856,6 @@ export default class WorldMap {
 
       ctx.stroke();
       ctx.closePath();
-
-      const foundProvince = this.findProvince(hex);
-      if (foundProvince) {
-        ctx.beginPath();
-        ctx.lineCap = 'round';
-        ctx.lineWidth = 2;
-        ctx.strokeStyle = foundProvince.owner.display.border_color;
-        const width = 1;
-        ctx.moveTo(origin[0], origin[1] + width);
-        ctx.lineTo(pointer_1[0] - width, pointer_1[1]);
-        ctx.moveTo(pointer_1[0] - width, pointer_1[1]);
-        ctx.lineTo(pointer_2[0] - width, pointer_2[1]);
-        ctx.moveTo(pointer_2[0] - width, pointer_2[1]);
-        ctx.lineTo(pointer_3[0], pointer_3[1] - width);
-        ctx.moveTo(pointer_3[0], pointer_3[1] - width);
-        ctx.lineTo(pointer_4[0] + width, pointer_4[1]);
-        ctx.moveTo(pointer_4[0] + width, pointer_4[1]);
-        ctx.lineTo(pointer_5[0] + width, pointer_5[1]);
-        ctx.moveTo(pointer_5[0] + width, pointer_5[1]);
-        ctx.lineTo(origin[0], origin[1] + width);
-        ctx.stroke();
-        ctx.closePath();
-      }
     }
   }
 

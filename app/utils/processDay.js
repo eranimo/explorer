@@ -68,6 +68,7 @@ export default function processDay(timeline, worldData, enums, hexes, currentDay
             newWorldData[model][key] = {}
           }
           newWorldData[model][key] = changeActions[change.type](newWorldData[model][key], _.cloneDeep(change));
+          newWorldData[model][key].id = key;
         });
       });
     });
@@ -88,7 +89,9 @@ export default function processDay(timeline, worldData, enums, hexes, currentDay
   _.each(newWorldData, (models, modelType) => {
     _.each(models, (model, modelId) => {
       _.each(model, (value, key) => {
-        evaluateRelationships(model, key, value, worldInfo)
+        if (key !== 'id') {
+          evaluateRelationships(model, key, value, worldInfo)
+        }
       })
     });
   });

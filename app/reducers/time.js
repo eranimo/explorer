@@ -7,6 +7,7 @@ import {
   PREV_DAY,
   NEXT_DAY,
   GET_DAY_DATA,
+  GO_TO_DAY,
   SLOWER,
   FASTER
 } from '../actions/time';
@@ -68,6 +69,12 @@ export default function counter(state = INITIAL_STATE, action) {
       const dayData = processDay(timeline, data, enums, hexes, state.currentDay);
       console.log('%cToday\s data: %O', 'font-weight: bold', dayData);
       return { ...state, dayData };
+    case GO_TO_DAY:
+      console.log(action.data)
+      return {
+        ...state,
+        currentDay: wrapDate(action.data).subtract(1, 'day')
+      };
     default:
       return state;
   }

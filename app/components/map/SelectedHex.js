@@ -4,16 +4,19 @@ import _ from 'lodash';
 class SelectedHex extends Component {
   static propTypes = {
     hex: PropTypes.object,
-    currentDay: PropTypes.currentDay,
+    dayData: PropTypes.object,
     geoforms: PropTypes.array
   };
 
   render() {
-    const { hex, geoforms } = this.props;
+    const { hex, geoforms, dayData } = this.props;
     console.log('selected', hex);
     let geoform = _.find(geoforms, { id: hex.geoform });
-    console.log(geoform);
+    console.log('day', dayData);
     geoform = geoform && geoform.type || 'None';
+
+    // find occupied provinces
+
     return (
       <div>
         <div>ID: {hex.id}</div>

@@ -24,6 +24,7 @@ class HexGrid extends Component {
     };
 
     console.log('provinces', this.getMapDetails());
+    console.log('owner', this.getMapDetails().provinces[0].owner);
     this.worldMap = new WorldMap(hexes, canvases, mapView, dayData, {
       selectHex,
       deselectHex,

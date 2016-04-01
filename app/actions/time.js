@@ -5,6 +5,7 @@ export const NEXT_DAY = 'NEXT_DAY';
 export const SLOWER = 'SLOWER';
 export const FASTER = 'FASTER';
 export const GET_DAY_DATA = 'GET_DAY_DATA';
+export const GO_TO_DAY = 'GO_TO_DAY';
 
 
 const SPEED_SECONDS = {
@@ -50,14 +51,26 @@ export function faster() {
   return { type: FASTER };
 }
 
+export function goToDay(day) {
+  return (dispatch) => {
+    dispatch({ type: GO_TO_DAY, data: day });
+    dispatch(getDayData());
+  };
+}
+
 
 export function play() {
-  return (dispatch) => {
+  return (dispatch, getState) => {
     dispatch({ type: PLAY });
     function step() {
-      dispatch(nextDay());
-      dispatch(getDayData());
-      window.playInterval = setTimeout(step, SPEED_SECONDS[window.speed]);
+      const { time, world } = getState();
+      if (time.currentDay.isBefore(world.timeRange.end)) {
+        dispatch(nextDay());
+        dispatch(getDayData());
+        window.playInterval = setTimeout(step, SPEED_SECONDS[window.speed]);
+      } else {
+        dispatch(pause());
+      }
     }
     step();
   };

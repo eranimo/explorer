@@ -43,7 +43,7 @@ app.on('ready', () => {
 
   if (process.platform === 'darwin') {
     template = [{
-      label: 'Electron',
+      label: 'Explorer',
       submenu: [{
         label: 'About ElectronReact',
         selector: 'orderFrontStandardAboutPanel:'

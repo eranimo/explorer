@@ -38,25 +38,29 @@ export function construct(constructor, name, args) {
   return new F();
 }
 
-export function processIDString(context, model, keyword, value, key, worldInfo) {
-  const foundClass = KEYWORD_MAP[keyword];
+export function processIDString(context, key, id, classKeyword, worldInfo) {
+  const foundClass = KEYWORD_MAP[classKeyword];
   Object.defineProperty(context, key, {
     get() {
-      const newModel = worldInfo.data[foundClass.key][model[key]];
-      // if (_.isObject(newModel._model)) {
-      //   return newModel;
-      // }
+      const newModel = worldInfo.data[foundClass.key][id];
       return construct(foundClass.className(), foundClass.key, [newModel.__model, worldInfo, true]);
-    },
-    set(newValue) {
-      const newModel = worldInfo.data[foundClass.key][newValue];
-      // if (newModel.__model) {
-      //   return newModel;
-      // }
-      return construct(foundClass.className(), foundClass.key, [newModel.__model, worldInfo]);
     },
     enumerable: true
   });
+}
+
+export function evaluateRelationships(model, key, value, worldInfo){
+  if (isIDString(value)) {
+    const keyword = value.substr(0, 2);
+    processIDString(model, key, value, keyword, worldInfo);
+  } else if (_.isArray(value) && _.every(value, isIDString)) {
+    model[key] = [];
+    value.forEach((v, i) => {
+      const keyword = value[i].substr(0, 2);
+      processIDString(model[key], i, v, keyword, worldInfo);
+    });
+  }
+  return model
 }
 
 function isEnum(value) {
@@ -80,22 +84,14 @@ export class Base {
       if (key === '__model') {
         return;
       }
-      if (isIDString(value)) {
-        const keyword = value.substr(0, 2);
-        processIDString(this, this.__model, keyword, value, key, worldInfo);
-      } else if (_.isArray(value) && _.every(value, isIDString)) {
-        this[key] = [];
-        value.forEach((v, i) => {
-          const keyword = value[i].substr(0, 2);
-          processIDString(this[key], this.__model[key], keyword, v, i, worldInfo);
-        });
-      } else if (isEnum(value)) {
+      if (isEnum(value)) {
         this[key] = processEnumObject(worldInfo.enums, value);
       } else if (_.isObject(value) && value.x && value.y) {
         this[key] = worldInfo.hexes[value.x][value.y];
       } else {
         this[key] = value;
       }
+      evaluateRelationships(this, key, value, worldInfo)
     });
   }
 }

@@ -1,0 +1,7 @@
+import moment from 'moment';
+
+export const DAY_FORMAT = 'YYYY-MM-DD';
+
+export function convertToMoment(dateString) {
+  return moment(dateString, DAY_FORMAT);
+}

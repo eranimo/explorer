@@ -2,13 +2,14 @@ import moment from 'moment';
 import _ from 'lodash';
 
 // import { Country, Pop, Hex, Province, CLASS_MAP, construct } from '../models/base';
-import { CLASSES, construct, isIDString, processIDString } from '../models';
+import { CLASSES, construct, isIDString, processIDString, evaluateRelationships } from '../models';
 
-const DAY_FORMAT = 'YYYY-MM-DD';
+import { convertToMoment } from './dates';
 
 
 const changeActions = {
   set(data, change) {
+    //console.log(data, change)
     data[change.key] = change.value;
     // console.log('SET', change.key, change.value)
     return data;
@@ -32,7 +33,7 @@ function transformDaysToMoment(dayChanges) {
     if (value) {
       return {
         modelChanges: value,
-        jsDate: moment(key, DAY_FORMAT)
+        jsDate: convertToMoment(key)
       };
     }
   });
@@ -40,8 +41,8 @@ function transformDaysToMoment(dayChanges) {
 
 export default function processDay(timeline, worldData, enums, hexes, currentDay) {
   console.groupCollapsed("Processing Day Changes");
-  const currentDayObj = moment(currentDay, DAY_FORMAT);
-  console.log('Pre-changed world data: %O', _.cloneDeep(worldData))
+  const currentDayObj = convertToMoment(currentDay);
+  // console.log('Pre-changed world data: %O', _.cloneDeep(worldData))
 
   const changesToday = _.zipWith(_.keys(timeline), _.values(timeline), (model, days) => {
     return {
@@ -56,23 +57,39 @@ export default function processDay(timeline, worldData, enums, hexes, currentDay
 
   // apply all changes to object model
   const newWorldData = _.cloneDeep(worldData);
+  const worldInfo = { data: newWorldData, enums, hexes }
   changesToday.forEach(({ model, days }) => {
     days.forEach(({ modelChanges }) => {
       _.each(modelChanges, (changes, key) => {
         changes.forEach((change) => {
+          // console.log(newWorldData[model], key)
+          if (!newWorldData[model][key]) {
+            console.log('created new: ', model, key)
+            newWorldData[model][key] = {}
+          }
           newWorldData[model][key] = changeActions[change.type](newWorldData[model][key], _.cloneDeep(change));
-          // console.log(_.clone(newWorldData[model][key]))
         });
       });
     });
   });
+
   console.log('Post-changed world data: %O', _.clone(newWorldData))
 
   // instantiate classes
   _.map(CLASSES, (classConstructor, key) => {
     newWorldData[key] = _.mapValues(newWorldData[key], (model) => {
       //console.log('process', model)
-      return construct(classConstructor(), key, [model, { data: newWorldData, enums, hexes }]);
+      return construct(classConstructor(), key, [model, worldInfo]);
+    });
+  });
+
+  // resolve lookups
+
+  _.each(newWorldData, (models, modelType) => {
+    _.each(models, (model, modelId) => {
+      _.each(model, (value, key) => {
+        evaluateRelationships(model, key, value, worldInfo)
+      })
     });
   });
   console.log('Post-instantiated world data;: %O', newWorldData);

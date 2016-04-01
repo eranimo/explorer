@@ -66,7 +66,10 @@ class SelectedHex extends Component {
     if (province) {
       return (
         <div>
-          Owner: {province.owner.name}
+          <dl>
+            <dt>Owner</dt>
+            <dd>{province.owner.name}</dd>
+          </dl>
         </div>
       )
     }

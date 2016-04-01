@@ -538,50 +538,39 @@ export default class WorldMap {
       }
     }
 
-    // draw selected hexagon
-
-    // var selected_hex = this.scope.vm.selected_hex;
-    // if (selected_hex) {
-    //   var x = this.mapState.loc.x + selected_hex.y * this.HEXRECTWIDTH + ((selected_hex.x % 2) * this.HEXRADIUS),
-    //     y = this.mapState.loc.y + selected_hex.x * (this.SIDELENGTH + this.HEXHEIGHT),
-    //     origin = [this.r(x + this.HEXRADIUS), this.r(y)],
-    //     pointer_1 = [this.r(x) + this.r(this.HEXRECTWIDTH), this.r(y + this.HEXHEIGHT)],
-    //     pointer_2 = [this.r(x) + this.r(this.HEXRECTWIDTH), this.r(y + this.HEXHEIGHT + this.SIDELENGTH)],
-    //     pointer_3 = [this.r(x) + this.r(this.HEXRADIUS), this.r(y + this.HEXRECTHEIGHT)],
-    //     pointer_4 = [this.r(x), this.r(y + this.SIDELENGTH + this.HEXHEIGHT)],
-    //     pointer_5 = [this.r(x), this.r(y + this.HEXHEIGHT)];
-    //
-    //   ctx.lineWidth = 2;
-    //   ctx.beginPath();
-    //
-    //   // north east
-    //   ctx.strokeStyle = 'rgb(255, 246, 15);';
-    //   ctx.moveTo(origin[0], origin[1] + 1);
-    //   ctx.lineTo(pointer_1[0] - 1, pointer_1[1]);
-    //
-    //   // east
-    //   ctx.moveTo(pointer_1[0] - 1, pointer_1[1]);
-    //   ctx.lineTo(pointer_2[0] - 1, pointer_2[1]);
-    //
-    //   // south east
-    //   ctx.moveTo(pointer_2[0] - 1, pointer_2[1]);
-    //   ctx.lineTo(pointer_3[0], pointer_3[1] - 1);
-    //
-    //   // south west
-    //   ctx.moveTo(pointer_3[0], pointer_3[1] - 1);
-    //   ctx.lineTo(pointer_4[0] + 1, pointer_4[1]);
-    //
-    //   // west
-    //   ctx.moveTo(pointer_4[0] + 1, pointer_4[1]);
-    //   ctx.lineTo(pointer_5[0] + 1, pointer_5[1]);
-    //
-    //   // north west
-    //   ctx.moveTo(pointer_5[0] + 1, pointer_5[1]);
-    //   ctx.lineTo(origin[0], origin[1] + 1);
-    //
-    //   ctx.stroke();
-    //   ctx.closePath();
-    // }
+    const selectedHex = this.functions.getSelectedHex();
+    if (selectedHex) {
+      const coordinate = this.hexToCoordinate(selectedHex.x, selectedHex.y);
+      const x = this.mapState.loc.x + coordinate.x;
+      const y = this.mapState.loc.y + coordinate.y;
+      let origin = [this.r(x + this.HEXRADIUS), this.r(y)];
+      let pointer_1 = [this.r(x) + this.r(this.HEXRECTWIDTH), this.r(y + this.HEXHEIGHT)];
+      let pointer_2 = [this.r(x) + this.r(this.HEXRECTWIDTH), this.r(y + this.HEXHEIGHT + this.SIDELENGTH)];
+      let pointer_3 = [this.r(x) + this.r(this.HEXRADIUS), this.r(y + this.HEXRECTHEIGHT)];
+      let pointer_4 = [this.r(x), this.r(y + this.SIDELENGTH + this.HEXHEIGHT)];
+      let pointer_5 = [this.r(x), this.r(y + this.HEXHEIGHT)];
+      ctx.beginPath();
+      ctx.lineCap = 'square';
+      ctx.lineWidth = this.r(3);
+      const offset = 1;
+      ctx.setLineDash([this.r(5), this.r(5)]);
+      ctx.strokeStyle = 'rgb(0, 0, 0)';
+      ctx.moveTo(origin[0], origin[1] + offset);
+      ctx.lineTo(pointer_1[0] - offset, pointer_1[1]);
+      ctx.moveTo(pointer_1[0] - offset, pointer_1[1]);
+      ctx.lineTo(pointer_2[0] - offset, pointer_2[1]);
+      ctx.moveTo(pointer_2[0] - offset, pointer_2[1]);
+      ctx.lineTo(pointer_3[0], pointer_3[1] - offset);
+      ctx.moveTo(pointer_3[0], pointer_3[1] - offset);
+      ctx.lineTo(pointer_4[0] + offset, pointer_4[1]);
+      ctx.moveTo(pointer_4[0] + offset, pointer_4[1]);
+      ctx.lineTo(pointer_5[0] + offset, pointer_5[1]);
+      ctx.moveTo(pointer_5[0] + offset, pointer_5[1]);
+      ctx.lineTo(origin[0], origin[1] + offset);
+      ctx.stroke();
+      ctx.closePath();
+      ctx.setLineDash([0, 0]);
+    }
   }
 
   findProvince(hex) {
@@ -707,31 +696,8 @@ export default class WorldMap {
       //   ctx.stroke();
       //   ctx.closePath();
       // }
-      const selectedHex = this.functions.getSelectedHex();
-      if (selectedHex && selectedHex.id === hex.id) {
-        ctx.beginPath();
-        ctx.lineCap = 'round';
-        ctx.lineWidth = 2;
-        ctx.setLineDash([5, 10]);
-        ctx.strokeStyle = 'rgb(0, 0, 0)';
-        const width = 1;
-        ctx.moveTo(origin[0], origin[1] + width);
-        ctx.lineTo(pointer_1[0] - width, pointer_1[1]);
-        ctx.moveTo(pointer_1[0] - width, pointer_1[1]);
-        ctx.lineTo(pointer_2[0] - width, pointer_2[1]);
-        ctx.moveTo(pointer_2[0] - width, pointer_2[1]);
-        ctx.lineTo(pointer_3[0], pointer_3[1] - width);
-        ctx.moveTo(pointer_3[0], pointer_3[1] - width);
-        ctx.lineTo(pointer_4[0] + width, pointer_4[1]);
-        ctx.moveTo(pointer_4[0] + width, pointer_4[1]);
-        ctx.lineTo(pointer_5[0] + width, pointer_5[1]);
-        ctx.moveTo(pointer_5[0] + width, pointer_5[1]);
-        ctx.lineTo(origin[0], origin[1] + width);
-        ctx.stroke();
-        ctx.closePath();
-      }
+
       ctx.beginPath();
-      ctx.setLineDash([0, 0]);
       // north east
       if (hex.edges.north_east.is_coast && view.borders) {
         ctx.lineWidth = 2;

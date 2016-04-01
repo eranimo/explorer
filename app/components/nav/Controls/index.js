@@ -38,11 +38,11 @@ class Controls extends Component {
   }
 
   goToFirst() {
-    this.props.goToDay(this.props.timeRange.start.clone().add(1, 'days'));
+    this.props.goToDay(this.props.timeRange.start);
   }
 
   goToLast() {
-    this.props.goToDay(this.props.timeRange.end.clone().add(1, 'days'));
+    this.props.goToDay(this.props.timeRange.end);
   }
 
   render() {
@@ -87,6 +87,7 @@ class Controls extends Component {
             <DatePicker
               className={styles.datepicker}
               selected={currentDay}
+              tetherConstraints={[ { to: 'body', attachment: 'together' } ]}
               onChange={this.props.goToDay}
               dateFormat="MMMM Do [Y]Y"
               popoverTargetAttachment="bottom left"

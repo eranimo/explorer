@@ -12,7 +12,10 @@ module.exports = {
     }]
   },
   sassLoader: {
-    includePaths: [path.resolve(__dirname, "./app")]
+    includePaths: [
+      path.resolve(__dirname, "./app"),
+      path.resolve(__dirname, "./node_modules")
+    ]
   },
   output: {
     path: path.join(__dirname, 'dist'),

@@ -57,8 +57,9 @@
       float: left;
       clear: left;
       margin-right: 0px;
-      padding: 3px 0;
+      padding: 7px 0;
       color: $overlay-color;
+      margin-top: -8px;
 
       &:after {
         content: ':';
@@ -69,7 +70,9 @@
       display: table-cell;
       padding: 5px;
       margin-left: 100px;
-      line-height: 13px;
+      line-height: 20px;
+      position: relative;
+      top: -8px;
     }
   }
 

@@ -1,5 +1,5 @@
 import React, { Component, PropTypes } from 'react';
-import styles from './HexGrid.module.css';
+import styles from './HexGrid.module.scss';
 import _ from 'lodash';
 import * as MAPVIEWS from './map_views.const';
 

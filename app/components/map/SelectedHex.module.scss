@@ -1,0 +1,62 @@
+@import 'styles/UI';
+
+
+.TitleBar {
+  padding: 0.5rem;
+  font-size: 20px;
+}
+
+.SelectedHex {
+
+
+  :global(.ReactTabs__TabList) {
+    border-top: 1px solid $overlay-border;
+    border-bottom-color: $overlay-border;
+    background-color: rgba(100, 100, 100, 0.2);
+    margin: 0;
+
+    :global(.ReactTabs__Tab--selected) {
+      border-radius: 0;
+      background-color: lighten($overlay-background, 10%);
+      border: 1px solid $overlay-border;
+      color: #DDD;
+      top: 0px;
+      padding-top: 7px;
+      margin-bottom: -1px;
+      margin-top: -1px;
+    }
+    :global([role=tab]:focus:after) {
+      background: none;
+    }
+  }
+
+  :global(.ReactTabs__TabPanel) {
+    padding: 15px;
+  }
+
+  dl {
+    margin: 0;
+    overflow: auto;
+    font-size: 14px;
+
+    > dt {
+      float: left;
+      clear: left;
+      margin-right: 0px;
+      padding: 3px 0;
+      color: $overlay-color;
+
+      &:after {
+        content: ':';
+      }
+    }
+
+    > dd {
+      display: table-cell;
+      padding: 5px;
+      margin-left: 100px;
+      line-height: 13px;
+    }
+  }
+
+}

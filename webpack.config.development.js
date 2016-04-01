@@ -26,10 +26,24 @@ config.module.loaders.push({
     'css-loader'
   ]
 }, {
+  test: /^((?!\.module).)*\.scss$/,
+  loaders: [
+    'style-loader',
+    'css-loader',
+    'sass-loader?sourceMap'
+  ]
+}, {
   test: /\.module\.css$/,
   loaders: [
     'style-loader',
     'css-loader?modules&importLoaders=1&localIdentName=[name]__[local]___[hash:base64:5]!'
+  ]
+}, {
+  test: /\.scss$/,
+  loaders: [
+    'style-loader',
+    'css-loader?modules&importLoaders=1&localIdentName=[name]__[local]___[hash:base64:5]!',
+    'sass-loader?sourceMap'
   ]
 });
 

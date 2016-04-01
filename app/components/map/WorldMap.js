@@ -613,7 +613,7 @@ export default class WorldMap {
     ctx.lineWidth = this.r(3);
     ctx.strokeStyle = province.owner.display.border_color;
     ctx.setLineDash([1, 0]);
-    return 2;
+    return 3;
   }
 
   drawProvinceBorders(originX, originY, cx, cy) {
@@ -633,7 +633,7 @@ export default class WorldMap {
     if (foundProvince) {
       let offset;
 
-      ctx.lineCap = 'rounded';
+      ctx.lineCap = 'round';
       // north east
       ctx.beginPath();
       offset = this.decideBorderWidth(foundProvince, 'north_east', ctx);

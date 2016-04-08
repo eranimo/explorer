@@ -63,6 +63,8 @@ class SelectedHex extends Component {
     const province = this.getProvinceAtHex();
     console.log(province)
     let ownedSection = null;
+    console.log(province.pops);
+    const sortedPops = _.sortBy(province.pops, 'id');
     if (province) {
       return (
         <div>
@@ -70,6 +72,51 @@ class SelectedHex extends Component {
             <dt>Owner</dt>
             <dd>{province.owner.name}</dd>
           </dl>
+          <hr />
+          Pops
+          <div style={{fontSize: '12px', overflow: 'auto', width: '500px'}}>
+            <table>
+              <thead>
+                <tr>
+                  <th>Job</th>
+                  <th>Money</th>
+                  <th>Profit</th>
+                  <th># S</th>
+                  <th># F</th>
+                  <th>Inventory</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sortedPops.map((pop) => {
+                  return (
+                    <tr>
+                      <td>
+                        {pop.pop_type.title}
+                      </td>
+                      <td>
+                        {_.round(pop.money, 2)}
+                      </td>
+                      <td>
+                        {_.round(pop.money - pop.money_yesterday, 2)}
+                      </td>
+                      <td>
+                        {pop.successful_trades}
+                      </td>
+                      <td>
+                        {pop.failed_trades}
+                      </td>
+                      <td>
+                        {pop.inventory.map((inv) => {
+                          const amount = _.sum(_.map(inv.contents, 'amount')) || 0;
+                          return `${inv.good.title}: ${amount}; `
+                        })}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       )
     }

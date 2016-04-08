@@ -77,6 +77,23 @@ function processEnumObject(enums, enumObj) {
   return new Enum(enums[enumObj.id][enumObj.key]);
 }
 
+function evaluate(model, key, value, worldInfo) {
+  if (isEnum(value)) {
+    model[key] = processEnumObject(worldInfo.enums, value);
+  } else if (_.isObject(value) && value.x && value.y) {
+    model[key] = worldInfo.hexes[value.x][value.y];
+  } else if (_.isObject(value)) {
+    let new_obj = _.isArray(value) ? [] : {};
+    _.each(value, (v, k) => {
+      evaluate(new_obj, k, v, worldInfo);
+    });
+    model[key] = new_obj;
+  } else {
+    model[key] = value;
+  }
+  evaluateRelationships(model, key, value, worldInfo)
+}
+
 export class Base {
   constructor(model, worldInfo) {
     this.__model = _.clone(model);
@@ -88,14 +105,7 @@ export class Base {
         this[key] = value;
         return;
       }
-      if (isEnum(value)) {
-        this[key] = processEnumObject(worldInfo.enums, value);
-      } else if (_.isObject(value) && value.x && value.y) {
-        this[key] = worldInfo.hexes[value.x][value.y];
-      } else {
-        this[key] = value;
-      }
-      evaluateRelationships(this, key, value, worldInfo)
+      evaluate(this, key, value, worldInfo);
     });
   }
 }

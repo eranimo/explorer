@@ -74,7 +74,7 @@ function Enum(model) {
 }
 
 function processEnumObject(enums, enumObj) {
-  return new Enum(enums[enumObj.id][enumObj.key]);
+  return enums[enumObj.id][enumObj.key];
 }
 
 function evaluate(model, key, value, worldInfo) {

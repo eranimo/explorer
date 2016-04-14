@@ -4,27 +4,36 @@ import _ from 'lodash';
 // import { Country, Pop, Hex, Province, CLASS_MAP, construct } from '../models/base';
 import { CLASSES, construct, isIDString, processIDString, evaluateRelationships } from '../models';
 
-import { convertToMoment } from './dates';
+import { convertToMoment, momentToDateString } from './dates';
 
 
 const changeActions = {
   set(data, change) {
-    //console.log(data, change)
-    data[change.key] = change.value;
-    // console.log('SET', change.key, change.value)
-    return data;
+    // data[change.key] = change.value;
+    // return data;
+    return {
+      ...data,
+      [change.key]: change.value
+    }
   },
   update(data, change) {
-    data[change.key] = change.value;
-    // console.log('UPDATE', change.key, change.value)
-    return data;
+    // data[change.key] = change.value;
+    // return data;
+    return {
+      ...data,
+      [change.key]: change.value
+    }
   },
   set_index(data, change) {
     const index = change.key.match(/\[[0-9]+\]/)[0].substr(1, 1);
     const key = change.key.match(/[a-z]+/i)[0];
-    data[key][index] = change.value;
-    // console.log('SET_INDEX', key, index, change.value)
-    return data;
+    let newData = _.cloneDeep(data);
+    newData[key][index] = change.value;
+    return newData;
+    // return {
+    //   ...data,
+    //   [key]: [index]: change.value
+    // }
   }
 };
 
@@ -39,19 +48,28 @@ function transformDaysToMoment(dayChanges) {
   });
 }
 
-export default function processDay(timeline, worldData, enums, hexes, currentDay) {
-  console.groupCollapsed("Processing Day Changes");
-  const currentDayObj = convertToMoment(currentDay);
-  // console.log('Pre-changed world data: %O', _.cloneDeep(worldData))
+let cachedChanges = {};
+let cachedModels = {}
+let lastCachedDay;
 
-  const changesToday = _.zipWith(_.keys(timeline), _.values(timeline), (model, days) => {
-    return {
-      model,
-      days: _.orderBy(_.filter(transformDaysToMoment(days), ({ jsDate }) => {
-        return jsDate <= currentDayObj;
-      }), 'jsDate', 'asc')
-    };
-  });
+export default function processDay(timeline, worldData, enums, hexes, currentDay) {
+  const currentDayObj = convertToMoment(currentDay);
+  console.groupCollapsed("Processing Day Changes");
+  // console.log('Pre-changed world data: %O', _.cloneDeep(worldData))
+  let changesToday;
+  if (cachedChanges[currentDay]) {
+    changesToday = cachedChanges[currentDay];
+  } else {
+    changesToday = _.zipWith(_.keys(timeline), _.values(timeline), (model, days) => {
+      return {
+        model,
+        days: _.orderBy(_.filter(transformDaysToMoment(days), ({ jsDate }) => {
+          return jsDate <= currentDayObj;
+        }), 'jsDate', 'asc')
+      };
+    });
+    cachedChanges[currentDay] = changesToday;
+  }
 
   console.log('Changes today: %O', changesToday);
 
@@ -59,18 +77,30 @@ export default function processDay(timeline, worldData, enums, hexes, currentDay
   const newWorldData = _.cloneDeep(worldData);
   const worldInfo = { data: newWorldData, enums, hexes }
   changesToday.forEach(({ model, days }) => {
-    days.forEach(({ modelChanges }) => {
+    // if we have a cached day, jump to it
+    days.forEach(({ jsDate, modelChanges }) => {
+
       _.each(modelChanges, (changes, key) => {
-        changes.forEach((change) => {
-          // console.log(newWorldData[model], key)
-          if (!newWorldData[model][key]) {
-            console.log('created new: ', model, key)
-            newWorldData[model][key] = {}
-          }
-          newWorldData[model][key] = changeActions[change.type](newWorldData[model][key], _.cloneDeep(change));
-          newWorldData[model][key].id = key;
-        });
+        const cacheKey = jsDate + model + key;
+        if (cachedModels[cacheKey]) {
+          newWorldData[model][key] = cachedModels[cacheKey];
+        } else {
+          changes.forEach((change) => {
+            if (!newWorldData[model][key]) {
+              //console.log('created new: ', model, key)
+              newWorldData[model][key] = {}
+            }
+            let sourceModel;
+            newWorldData[model][key] = changeActions[change.type](newWorldData[model][key], _.cloneDeep(change));
+            newWorldData[model][key].id = key;
+          });
+          cachedModels[cacheKey] = newWorldData[model][key];
+        }
       });
+
+      if (!lastCachedDay || lastCachedDay < jsDate) {
+        lastCachedDay = jsDate;
+      }
     });
   });
 

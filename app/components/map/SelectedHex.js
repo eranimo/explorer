@@ -73,6 +73,33 @@ class SelectedHex extends Component {
             <dd>{province.owner.name}</dd>
           </dl>
           <hr />
+          Prices
+          <table style={{fontSize: '12px'}}>
+            <thead>
+              <tr>
+                <th>Good</th>
+                <th>Price</th>
+                <th>Demand</th>
+                <th>Supply</th>
+                <th>Trades</th>
+              </tr>
+            </thead>
+            <tbody>
+              {province.market.history.map(({ good, data }) => {
+                return (
+                  <tr>
+                    <td>{good.title}</td>
+                    <td>{data.prices[0]}</td>
+                    <td>{data.buy_orders[0]}</td>
+                    <td>{data.sell_orders[0]}</td>
+                    <td>{data.trades[0]}</td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+          <hr />
+          
           Pops
           <div style={{fontSize: '12px', overflow: 'auto', width: '500px'}}>
             <table>
@@ -83,6 +110,7 @@ class SelectedHex extends Component {
                   <th>Profit</th>
                   <th># S</th>
                   <th># F</th>
+                  <th># B</th>
                   <th>Inventory</th>
                 </tr>
               </thead>
@@ -104,6 +132,9 @@ class SelectedHex extends Component {
                       </td>
                       <td>
                         {pop.failed_trades}
+                      </td>
+                      <td>
+                        {pop.bankrupt_times}
                       </td>
                       <td>
                         {pop.inventory.map((inv) => {

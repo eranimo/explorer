@@ -22,6 +22,8 @@ const MAX_SPEED = 3;
 const INITIAL_STATE = {
   currentDay: wrapDate('0001-01-01'),
   speed: MIN_SPEED,
+  dayData: null,
+  timeline: {},
   isPlaying: false
 };
 window.speed = MIN_SPEED;
@@ -66,9 +68,22 @@ export default function counter(state = INITIAL_STATE, action) {
       return { ...state, speed };
     case GET_DAY_DATA:
       const { timeline, data, enums, hexes } = action.data;
-      const dayData = processDay(timeline, data, enums, hexes, state.currentDay);
-      console.log('%cToday\s data: %O', 'font-weight: bold', dayData);
-      return { ...state, dayData };
+      const cachedDayData = state.timeline[state.currentDay];
+      if (cachedDayData) {
+        console.log('%cToday\s data (cached): %O', 'font-weight: bold', cachedDayData);
+        return { ...state, dayData: cachedDayData }
+      } else {
+        const dayData = processDay(timeline, data, enums, hexes, state.currentDay);
+        console.log('%cToday\s data: %O', 'font-weight: bold', dayData);
+        return {
+          ...state,
+          dayData,
+          timeline: {
+            ...state.timeline,
+            [state.currentDay]: dayData
+          }
+        };
+      }
     case GO_TO_DAY:
       console.log(action.data)
       return {

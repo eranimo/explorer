@@ -22,7 +22,7 @@ class StatsPage extends Component {
     loadData: PropTypes.func.isRequired
   };
   componentDidMount() {
-    this.props.loadData();
+    //this.props.loadData();
     document.body.style.overflowY = 'auto';
   }
 

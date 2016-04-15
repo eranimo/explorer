@@ -75,6 +75,7 @@ export default function counter(state = INITIAL_STATE, action) {
       } else {
         const dayData = processDay(timeline, data, enums, hexes, state.currentDay);
         console.log('%cToday\s data: %O', 'font-weight: bold', dayData);
+        console.log(state)
         return {
           ...state,
           dayData,

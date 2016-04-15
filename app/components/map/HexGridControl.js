@@ -15,6 +15,7 @@ class HexGridControl extends Component {
   static propTypes = {
     hexes: PropTypes.array,
     dayData: PropTypes.object,
+    timeline: PropTypes.object,
     geoforms: PropTypes.array,
     details: PropTypes.object,
   };
@@ -49,7 +50,7 @@ class HexGridControl extends Component {
   }
 
   render() {
-    const { hexes, details, geoforms, dayData } = this.props;
+    const { hexes, details, geoforms, dayData, timeline } = this.props;
     if (hexes) {
       const mapViews = _.toArray(MAPVIEWS).map((v) => {
         return (<option key={v.name} value={v.map}>{v.title}</option>);
@@ -60,6 +61,7 @@ class HexGridControl extends Component {
           <div className={styles.sidebar}>
             <SelectedHex
               hex={this.state.selectedHex}
+              timeline={timeline}
               dayData={dayData}
               deselect={this.deselectHex.bind(this)}
               geoforms={geoforms}

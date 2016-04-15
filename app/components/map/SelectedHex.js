@@ -1,7 +1,7 @@
 import React, { Component, PropTypes } from 'react';
 import _ from 'lodash';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
-
+import { Link } from 'react-router';
 import styles from './SelectedHex.module.scss';
 
 class SelectedHex extends Component {
@@ -12,10 +12,13 @@ class SelectedHex extends Component {
     deselect: PropTypes.func
   };
 
+  static contextTypes = {
+    currentDay: PropTypes.object
+  };
+
   getProvinceAtHex() {
     let found;
     _.each(this.props.dayData.Province, (value, key) => {
-      console.log(value, this.props.hex)
       if (value.hex.id === this.props.hex.id) {
         found = value;
       }
@@ -61,10 +64,11 @@ class SelectedHex extends Component {
 
   renderProvinceTab() {
     const province = this.getProvinceAtHex();
-    console.log(province)
+    //console.log(province)
     let ownedSection = null;
-    console.log(province.pops);
-    const sortedPops = _.sortBy(province.pops, 'id');
+    //console.log(province.pops);
+    //console.log('Province Pop Jobs: ', job_data)
+
     if (province) {
       return (
         <div>
@@ -72,82 +76,8 @@ class SelectedHex extends Component {
             <dt>Owner</dt>
             <dd>{province.owner.name}</dd>
           </dl>
-          <hr />
-          Prices
-          <table style={{fontSize: '12px'}}>
-            <thead>
-              <tr>
-                <th>Good</th>
-                <th>Price</th>
-                <th>Demand</th>
-                <th>Supply</th>
-                <th>Trades</th>
-              </tr>
-            </thead>
-            <tbody>
-              {province.market.history.map(({ good, data }) => {
-                return (
-                  <tr>
-                    <td>{good.title}</td>
-                    <td>{data.prices[0]}</td>
-                    <td>{data.buy_orders[0]}</td>
-                    <td>{data.sell_orders[0]}</td>
-                    <td>{data.trades[0]}</td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-          <hr />
-          
-          Pops
-          <div style={{fontSize: '12px', overflow: 'auto', width: '500px'}}>
-            <table>
-              <thead>
-                <tr>
-                  <th>Job</th>
-                  <th>Money</th>
-                  <th>Profit</th>
-                  <th># S</th>
-                  <th># F</th>
-                  <th># B</th>
-                  <th>Inventory</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sortedPops.map((pop) => {
-                  return (
-                    <tr>
-                      <td>
-                        {pop.pop_type.title}
-                      </td>
-                      <td>
-                        {_.round(pop.money, 2)}
-                      </td>
-                      <td>
-                        {_.round(pop.money - pop.money_yesterday, 2)}
-                      </td>
-                      <td>
-                        {pop.successful_trades}
-                      </td>
-                      <td>
-                        {pop.failed_trades}
-                      </td>
-                      <td>
-                        {pop.bankrupt_times}
-                      </td>
-                      <td>
-                        {pop.inventory.map((inv) => {
-                          const amount = _.sum(_.map(inv.contents, 'amount')) || 0;
-                          return `${inv.good.title}: ${amount}; `
-                        })}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+
+          <Link to={`/details/Province/${province.id}`}>More Details</Link>
         </div>
       )
     }
@@ -174,6 +104,8 @@ class SelectedHex extends Component {
   }
 
   render() {
+
+    console.log('context: ', this.context)
     // find occupied provinces
     if (!this.getProvinceAtHex()) {
       return (

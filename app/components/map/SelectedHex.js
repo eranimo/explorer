@@ -75,6 +75,8 @@ class SelectedHex extends Component {
           <dl>
             <dt>Owner</dt>
             <dd>{province.owner.name}</dd>
+            <dt>Capital</dt>
+            <dd>{province.is_capital ? 'Yes' : 'No'}</dd>
           </dl>
 
           <Link to={`/details/Province/${province.id}`}>More Details</Link>

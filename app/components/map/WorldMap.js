@@ -44,6 +44,8 @@ export default class WorldMap {
     panning: false
   };
 
+  _province_cache = {};
+
   constructor(hexes, canvases, mapView, currentDay, functions, mapDetails) {
     this.size = hexes.length;
     this.setMapView(mapView);
@@ -525,6 +527,18 @@ export default class WorldMap {
         );
       }
     }
+
+    for (let i = visible.x1; i < visible.x2; ++i) {
+      for (let j = visible.y1; j < visible.y2; ++j) {
+        this.drawProvinceBorders(
+          i * this.HEXRECTWIDTH + ((j % 2) * this.HEXRADIUS),
+          j * (this.SIDELENGTH + this.HEXHEIGHT),
+          i,
+          j
+        );
+      }
+    }
+
     if (this.mapView.rivers || this.mapView.borders) {
       for (let i = visible.x1; i < visible.x2; ++i) {
         for (let j = visible.y1; j < visible.y2; ++j) {
@@ -535,17 +549,6 @@ export default class WorldMap {
             j
           );
         }
-      }
-    }
-
-    for (let i = visible.x1; i < visible.x2; ++i) {
-      for (let j = visible.y1; j < visible.y2; ++j) {
-        this.drawProvinceBorders(
-          i * this.HEXRECTWIDTH + ((j % 2) * this.HEXRADIUS),
-          j * (this.SIDELENGTH + this.HEXHEIGHT),
-          i,
-          j
-        );
       }
     }
 
@@ -597,7 +600,6 @@ export default class WorldMap {
     if (!foundProvince) {
       ctx.lineWidth = this.r(3);
       ctx.strokeStyle = province.owner.display.border_color;
-      ctx.setLineDash([1, 0]);
       return 2;
     }
 
@@ -605,14 +607,12 @@ export default class WorldMap {
     if (foundProvince.owner.id === ownerId) {
       ctx.lineWidth = 1;
       ctx.strokeStyle = province.owner.display.border_color;
-      ctx.setLineDash([1, 0]);
       return 0;
     }
 
     // border with foreigh province
     ctx.lineWidth = this.r(3);
     ctx.strokeStyle = province.owner.display.border_color;
-    ctx.setLineDash([1, 0]);
     return 3;
   }
 
@@ -640,26 +640,20 @@ export default class WorldMap {
       ctx.moveTo(origin[0], origin[1] + offset);
       ctx.lineTo(pointer_1[0] - offset, pointer_1[1]);
       ctx.stroke();
-      ctx.closePath();
 
       // east
-      ctx.beginPath();
       offset = this.decideBorderWidth(foundProvince, 'east', ctx);
       ctx.moveTo(pointer_1[0] - offset, pointer_1[1]);
       ctx.lineTo(pointer_2[0] - offset, pointer_2[1]);
       ctx.stroke();
-      ctx.closePath();
 
       // south east
-      ctx.beginPath();
       offset = this.decideBorderWidth(foundProvince, 'south_east', ctx);
       ctx.moveTo(pointer_2[0] - offset, pointer_2[1]);
       ctx.lineTo(pointer_3[0], pointer_3[1] - offset);
       ctx.stroke();
-      ctx.closePath();
 
       // south west
-      ctx.beginPath();
       offset = this.decideBorderWidth(foundProvince, 'south_west', ctx);
       ctx.moveTo(pointer_3[0], pointer_3[1] - offset);
       ctx.lineTo(pointer_4[0] + offset, pointer_4[1]);
@@ -667,15 +661,12 @@ export default class WorldMap {
       ctx.closePath();
 
       // west
-      ctx.beginPath();
       offset = this.decideBorderWidth(foundProvince, 'west', ctx);
       ctx.moveTo(pointer_4[0] + offset, pointer_4[1]);
       ctx.lineTo(pointer_5[0] + offset, pointer_5[1]);
       ctx.stroke();
-      ctx.closePath();
 
       // north west
-      ctx.beginPath();
       offset = this.decideBorderWidth(foundProvince, 'north_west', ctx);
       ctx.moveTo(pointer_5[0] + offset, pointer_5[1]);
       ctx.lineTo(origin[0], origin[1] + offset);
@@ -685,13 +676,18 @@ export default class WorldMap {
   }
 
   findProvince(hex) {
-    let found = false;
-    _.each(this.mapDetails.provinces, (province) => {
-      if (province.hex.x === hex.x && province.hex.y === hex.y) {
-        found = province;
-      }
-    });
-    return found;
+    if (this._province_cache[hex.id]) {
+      return this._province_cache[hex.id];
+    } else {
+      let foundProvince;
+      _.each(this.mapDetails.provinces, (province) => {
+        if (province.hex.x === hex.x && province.hex.y === hex.y) {
+          foundProvince = province;
+        }
+      });
+      this._province_cache[hex.id] = foundProvince;
+      return foundProvince;
+    }
   }
 
   /**

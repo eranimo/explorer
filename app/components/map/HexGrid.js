@@ -22,9 +22,6 @@ class HexGrid extends Component {
       minimapCanvas: this.refs.minimapImage,
       frameCanvas: this.refs.minimapFrame
     };
-
-    console.log('provinces', this.getMapDetails());
-    console.log('owner', this.getMapDetails().provinces[0].owner);
     this.worldMap = new WorldMap(hexes, canvases, mapView, dayData, {
       selectHex,
       deselectHex,
@@ -34,8 +31,6 @@ class HexGrid extends Component {
 
   componentDidUpdate() {
     this.worldMap.mapDetails = this.getMapDetails()
-    console.log('NEW DATA', _.clone(this.worldMap.mapDetails));
-
     this.worldMap.setMapView(this.props.mapView);
     this.worldMap.drawAll();
   }

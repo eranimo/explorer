@@ -43,9 +43,9 @@ app.on('ready', () => {
 
   if (process.platform === 'darwin') {
     template = [{
-      label: 'Explorer',
+      label: 'Historia',
       submenu: [{
-        label: 'About ElectronReact',
+        label: 'About Historia',
         selector: 'orderFrontStandardAboutPanel:'
       }, {
         type: 'separator'
@@ -55,7 +55,7 @@ app.on('ready', () => {
       }, {
         type: 'separator'
       }, {
-        label: 'Hide ElectronReact',
+        label: 'Hide Historia',
         accelerator: 'Command+H',
         selector: 'hide:'
       }, {
@@ -73,35 +73,6 @@ app.on('ready', () => {
         click() {
           app.quit();
         }
-      }]
-    }, {
-      label: 'Edit',
-      submenu: [{
-        label: 'Undo',
-        accelerator: 'Command+Z',
-        selector: 'undo:'
-      }, {
-        label: 'Redo',
-        accelerator: 'Shift+Command+Z',
-        selector: 'redo:'
-      }, {
-        type: 'separator'
-      }, {
-        label: 'Cut',
-        accelerator: 'Command+X',
-        selector: 'cut:'
-      }, {
-        label: 'Copy',
-        accelerator: 'Command+C',
-        selector: 'copy:'
-      }, {
-        label: 'Paste',
-        accelerator: 'Command+V',
-        selector: 'paste:'
-      }, {
-        label: 'Select All',
-        accelerator: 'Command+A',
-        selector: 'selectAll:'
       }]
     }, {
       label: 'View',
@@ -149,24 +120,19 @@ app.on('ready', () => {
     }, {
       label: 'Help',
       submenu: [{
-        label: 'Learn More',
+        label: 'Github Repo',
         click() {
-          shell.openExternal('http://electron.atom.io');
+          shell.openExternal('https://github.com/eranimo/historia');
         }
       }, {
         label: 'Documentation',
         click() {
-          shell.openExternal('https://github.com/atom/electron/tree/master/docs#readme');
-        }
-      }, {
-        label: 'Community Discussions',
-        click() {
-          shell.openExternal('https://discuss.atom.io/c/electron');
+          shell.openExternal('https://github.com/eranimo/historia/wiki');
         }
       }, {
         label: 'Search Issues',
         click() {
-          shell.openExternal('https://github.com/atom/electron/issues');
+          shell.openExternal('https://github.com/eranimo/historia/issues');
         }
       }]
     }];
@@ -216,24 +182,19 @@ app.on('ready', () => {
     }, {
       label: 'Help',
       submenu: [{
-        label: 'Learn More',
+        label: 'Github Repo',
         click() {
-          shell.openExternal('http://electron.atom.io');
+          shell.openExternal('https://github.com/eranimo/historia');
         }
       }, {
         label: 'Documentation',
         click() {
-          shell.openExternal('https://github.com/atom/electron/tree/master/docs#readme');
-        }
-      }, {
-        label: 'Community Discussions',
-        click() {
-          shell.openExternal('https://discuss.atom.io/c/electron');
+          shell.openExternal('https://github.com/eranimo/historia/wiki');
         }
       }, {
         label: 'Search Issues',
         click() {
-          shell.openExternal('https://github.com/atom/electron/issues');
+          shell.openExternal('https://github.com/eranimo/historia/issues');
         }
       }]
     }];

@@ -17,30 +17,30 @@ config.output.publicPath = '/dist/';
 
 config.module.loaders.push({
   test: /\.module\.css$/,
-  loader: ExtractTextPlugin.extract(
+  loaders: [
     'style-loader',
-    'css-loader?modules&importLoaders=1&localIdentName=[name]__[local]___[hash:base64:5]!'
-  )
+    'css-loader?sourceMap&modules&importLoaders=1&localIdentName=[name]__[local]___[hash:base64:5]!'
+  ]
 }, {
   test: /\.module\.scss$/,
-  loader: ExtractTextPlugin.extract(
+  loaders: [
     'style-loader',
-    'css-loader?modules&importLoaders=1&localIdentName=[name]__[local]___[hash:base64:5]!',
+    'css-loader?sourceMap&modules&importLoaders=1&localIdentName=[name]__[local]___[hash:base64:5]!',
     'sass-loader?sourceMap'
-  )
+  ]
 }, {
   test: /^((?!\.module).)*\.css$/,
-  loader: ExtractTextPlugin.extract(
+  loaders: [
     'style-loader',
-    'css-loader'
-  )
+    'css-loader?sourceMap'
+  ]
 }, {
   test: /^((?!\.module).)*\.scss$/,
-  loader: ExtractTextPlugin.extract(
+  loaders: [
     'style-loader',
-    'css-loader',
+    'css-loader?sourceMap',
     'sass-loader?sourceMap'
-  )
+  ]
 });
 
 config.plugins.push(

@@ -147,7 +147,12 @@ class PopTable extends Component {
 }
 
 class MarketTable extends Component {
+  static propTypes = {
+    province: PropTypes.object.isRequired
+  };
+
   render() {
+    const { province } = this.props;
     return (
       <table className={styles.PopTable}>
         <thead>
@@ -160,7 +165,7 @@ class MarketTable extends Component {
           </tr>
         </thead>
         <tbody>
-          {this.props.province.market.history.map(({ good, data }, id) => {
+          {province && province.market.history.map(({ good, data }, id) => {
             return (
               <tr id={id}>
                 <td>{good.title}</td>
@@ -498,7 +503,9 @@ class SelectedHex extends Component {
           </TabPanel>
           <TabPanel>
             <h2>Good Prices</h2>
-            <MarketTable enums={this.props.enums} province={province} />
+            <MarketTable
+              enums={this.props.enums}
+              province={province} />
 
             {_.values(Goods).map((i) => {
               console.log(i)

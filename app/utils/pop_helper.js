@@ -61,8 +61,6 @@ export function province_cumulative(province, timeline, currentDay, key) {
     .value();
 }
 
-
-
 export function province_population(province, timeline, currentDay) {
   return province_cumulative(province, timeline, currentDay, 'population');
 }

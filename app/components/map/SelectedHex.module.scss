@@ -173,5 +173,11 @@ $table-color: #245B73;
         text-align: center;
       }
     }
+
+    tr {
+      &:nth-child(2n) {
+        background-color: rgba($table-color, 0.1);
+      }
+    }
   }
 }

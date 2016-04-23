@@ -7,7 +7,8 @@ import {
   province_population,
   province_money,
   province_economic,
-  province_pop_jobs
+  province_pop_jobs,
+  province_market
 } from 'utils/pop_helper';
 import { convertToMoment } from 'utils/dates';
 import {
@@ -120,14 +121,14 @@ class PopTable extends Component {
             <th>Profit</th>
             <th># Trades</th>
             <th>Trade Success</th>
-            <th>Bankruptcies</th>
+            <th data-tip="Bankruptcies"># B</th>
           </tr>
         </thead>
         <tbody>
-          {_.orderBy(pops, 'id').map((pop) => {
+          {_.orderBy(pops, 'id').map((pop, id) => {
             const total_trades = pop.successful_trades + pop.failed_trades;
             return (
-              <tr>
+              <tr key={id}>
                 <td>{pop.pop_type.title}</td>
                 <td>{pop.population.toLocaleString()}</td>
                 <td>{(pop.population - pop.population_yesterday).toLocaleString()}</td>
@@ -159,9 +160,9 @@ class MarketTable extends Component {
           </tr>
         </thead>
         <tbody>
-          {this.props.province.market.history.map(({ good, data }) => {
+          {this.props.province.market.history.map(({ good, data }, id) => {
             return (
-              <tr>
+              <tr id={id}>
                 <td>{good.title}</td>
                 <td>{formatCurrency(data.prices[0])}</td>
                 <td>{data.buy_orders[0]}</td>
@@ -294,6 +295,12 @@ class SelectedHex extends Component {
     const province = this.getProvinceAtHex();
     let data = province_money(province, this.props.timeline, this.context.currentDay)
     return this.renderLineChart(data, 'money', '#08CC08', (i) => '$' + _.round(i, 2).toLocaleString())
+  }
+
+  renderGoodPriceChart(good) {
+    const province = this.getProvinceAtHex();
+    let data = province_market(province, this.props.timeline, this.context.currentDay)
+    return this.renderLineChart(data, good.name, good.color, (i) => '$' + i.toLocaleString())
   }
 
   renderEconomyChart() {
@@ -480,6 +487,7 @@ class SelectedHex extends Component {
   renderDetails() {
     if (this.state.detailsOpen) {
       const province = this.getProvinceAtHex();
+      const Goods = this.props.enums.Good;
       return (
         <Tabs className={styles.Details}>
           <TabList>
@@ -497,6 +505,17 @@ class SelectedHex extends Component {
           <TabPanel>
             <h2>Good Prices</h2>
             <MarketTable enums={this.props.enums} province={province} />
+
+            {_.values(Goods).map((i) => {
+              console.log(i)
+              return (
+                <div>
+                  <hr />
+                  <h2>{i.title}</h2>
+                  {this.renderGoodPriceChart(i)}
+                </div>
+              );
+            })}
           </TabPanel>
         </Tabs>
       );

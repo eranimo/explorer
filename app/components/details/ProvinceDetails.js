@@ -36,7 +36,7 @@ class ProvinceDetails extends Component {
 
     let marketSeries = _.map(this.props.enums.Good, (good) => {
       return { field: good.name, name: good.title, color: good.color };
-    });;
+    });
 
     const popGrowthData = province_population(province, timeline, this.context.currentDay);
 

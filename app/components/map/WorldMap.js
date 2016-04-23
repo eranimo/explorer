@@ -27,6 +27,15 @@ function darken(_color, percent) {
   return r + ',' + g + ',' + b;
 }
 
+const HEX_SIDES = {
+  'north_east': { fromPoint: 'north', toPoint: 'north_east' },
+  'east': { fromPoint: 'north_east', toPoint: 'south_east' },
+  'south_east': { fromPoint: 'south_east', toPoint: 'south' },
+  'south_west': { fromPoint: 'south', toPoint: 'south_west' },
+  'west': { fromPoint: 'south_west', toPoint: 'north_west' },
+  'north_west': { fromPoint: 'north_west', toPoint: 'north' },
+}
+
 export default class WorldMap {
 
   mapState = {
@@ -45,17 +54,22 @@ export default class WorldMap {
   };
 
   _province_cache = {};
+  _hex_points = {};
 
   constructor(hexes, canvases, mapView, currentDay, functions, mapDetails) {
     this.size = hexes.length;
     this.setMapView(mapView);
     this.functions = functions;
-    const { mainCanvas, minimapCanvas, frameCanvas } = canvases;
+    const { mainCanvas, politicalMap, minimapCanvas, frameCanvas } = canvases;
     this.countries = currentDay.Country;
     this.mapDetails = mapDetails;
     this.canvas = {
       elem: jQuery(mainCanvas),
       context: mainCanvas.getContext('2d')
+    };
+    this.politicalMap = {
+      elem: jQuery(politicalMap),
+      context: politicalMap.getContext('2d')
     };
     this.minimapCanvas = {
       elem: jQuery(minimapCanvas),
@@ -83,9 +97,29 @@ export default class WorldMap {
     this.anchor = jQuery('.navbar-primary');
     jQuery(mainCanvas)
       .attr({
-        width: this.anchor.width(),
+        width: jQuery(window).width(),
         height: jQuery(window).height() - this.anchor.height()
       });
+    jQuery(politicalMap)
+      .attr({
+        width: jQuery(window).width(),
+        height: jQuery(window).height() - this.anchor.height()
+      });
+
+
+    // list of hex coordinates
+    // compute province borders
+    this.no_borders = {
+      north_east: [],
+      east: [],
+      south_east: [],
+      south_west: [],
+      west: [],
+      north_west: []
+    }
+    this.country_borders = _.cloneDeep(this.no_borders);
+
+
 
     // compute some hex constants
     this.SIDELENGTH = 25;
@@ -102,6 +136,7 @@ export default class WorldMap {
 
     // events
     this.canvas.elem.css('cursor', 'pointer');
+    this.politicalMap.elem.css('cursor', 'pointer');
     this.canvas.elem.on({
       mousedown: (e) => {
         this.mapState.coord = {
@@ -134,7 +169,6 @@ export default class WorldMap {
         this.hover_hex = null;
         if (this.mapState.selecting) {
           this.drawMain();
-          this.drawProvinces();
           this.mapState.selecting = false;
         }
         this.mapState.panning = false;
@@ -151,9 +185,6 @@ export default class WorldMap {
           this.mapState.coord.x += diff.x;
           this.mapState.coord.y += diff.y;
         }
-        // draw hexagon hovering
-        // var screenX, screenY;
-
         this.mapState.cursorX = e.offsetX;
         this.mapState.cursorY = e.offsetY;
 
@@ -161,10 +192,6 @@ export default class WorldMap {
         var hexPos = this.coordinateToHex(coord.x, coord.y);
 
         this.mapState.selecting = true;
-
-        // screenX = hexPos.x * this.HEXRECTWIDTH + ((hexPos.y % 2) * this.HEXRADIUS);
-        // screenY = hexPos.y * (this.HEXHEIGHT + this.SIDELENGTH);
-
         this.clearMap();
 
 
@@ -173,23 +200,15 @@ export default class WorldMap {
           if (hexPos.y >= 0 && hexPos.y < this.BOARDHEIGHT) {
             var hex = this.grid[hexPos.y][hexPos.x];
             this.hover_hex = hex;
-            // if (hex.province_id) { // has provicne (i.e. not water)
-            //   this.hover_province_id = hex.province_id;
-            //   this.canvas.elem.css('cursor', 'pointer');
-            //   //this.drawHexagon(screenX, screenY, true, hexPos.x, hexPos.y);
-            // } else {
-            //   this.hover_province_id = null;
-            //   this.canvas.elem.css('cursor', 'default');
-            // }
           }
         }
 
         if (hexPos === null) {
           this.hover_hex = null;
         }
+
         this.drawMain();
         this.drawMinimapFrame();
-        this.drawProvinces();
       },
       mousewheel: (e) => {
         var delta = e.originalEvent.wheelDelta;
@@ -200,7 +219,6 @@ export default class WorldMap {
           // down
           this.zoom('down', e);
         }
-        this.drawProvinces();
         this.drawMinimapFrame();
         e.preventDefault();
       },
@@ -258,7 +276,6 @@ export default class WorldMap {
           this.move(-delta, 0);
         } else if (code === 32) {
           this.zoom();
-          this.drawProvinces();
         } else if (code === 67) {
           console.log(this.getCenter());
         }
@@ -402,9 +419,9 @@ export default class WorldMap {
    * Draws the entire map and minimap
    */
   drawAll() {
+    this.clearMap();
     this.drawMain();
     this.drawMinimap();
-    this.drawProvinces();
   }
 
   /**
@@ -515,7 +532,6 @@ export default class WorldMap {
     ctx.strokeStyle = '#000';
     ctx.lineWidth = 10;
     ctx.strokeWidth = 10;
-
     var visible = this.getVisibleHexes();
     for (let i = visible.x1; i < visible.x2; ++i) {
       for (let j = visible.y1; j < visible.y2; ++j) {
@@ -528,16 +544,67 @@ export default class WorldMap {
       }
     }
 
-    for (let i = visible.x1; i < visible.x2; ++i) {
-      for (let j = visible.y1; j < visible.y2; ++j) {
-        this.drawProvinceBorders(
-          i * this.HEXRECTWIDTH + ((j % 2) * this.HEXRADIUS),
-          j * (this.SIDELENGTH + this.HEXHEIGHT),
-          i,
-          j
-        );
-      }
-    }
+    // for (let i = visible.x1; i < visible.x2; ++i) {
+    //   for (let j = visible.y1; j < visible.y2; ++j) {
+    //     this.drawProvinceBorders(
+    //       i * this.HEXRECTWIDTH + ((j % 2) * this.HEXRADIUS),
+    //       j * (this.SIDELENGTH + this.HEXHEIGHT),
+    //       i,
+    //       j
+    //     );
+    //   }
+    // }
+
+    // this.country_borders = _.cloneDeep(this.no_borders);
+    // for (let i = visible.x1; i < visible.x2; ++i) {
+    //   for (let j = visible.y1; j < visible.y2; ++j) {
+    //     const hex = this.grid[j][i];
+    //     const province = this.findProvince(hex);
+    //     if (province) {
+    //       //console.log(hex)
+    //       const ownerId = province.owner.id;
+    //       const neighbors = province.hex.neighbors;
+    //       _.each(HEX_SIDES, ({ fromPoint, toPoint }, sideName) => {
+    //         const foundHex = neighbors[sideName];
+    //         const foundProvince = this.findProvince(foundHex);
+    //         //console.log(hex.x, hex.y, sideName, foundProvince)
+    //         if (!foundProvince) {
+    //           // border with wilderness
+    //           this.country_borders[sideName].push(province);
+    //           //console.log('found wilderness')
+    //         } else if (foundProvince && foundProvince.owner.id === ownerId) {
+    //           // border with owned province
+    //
+    //         } else {
+    //           // border with foreign province
+    //           //this.country_borders[sideName].push(province);
+    //         }
+    //       });
+    //     }
+    //   }
+    // }
+    // ctx = this.politicalMap.context;
+    // ctx.lineCap = 'round';
+    // ctx.beginPath();
+    // ctx.lineWidth = 2;
+    // _.each(this.country_borders, (sides, sideName) => {
+    //   const { fromPoint, toPoint } = HEX_SIDES[sideName];
+    //   sides.forEach((province) => {
+    //     console.log(`Drawing side ${sideName} for ${province.hex.x}, ${province.hex.y}`)
+    //     const coordinate = this.hexToCoordinate(province.hex.x, province.hex.y);
+    //     const x = Math.floor(this.mapState.loc.x + coordinate.x);
+    //     const y = Math.floor(this.mapState.loc.y + coordinate.y);
+    //     const points = this.getHexSidePoints(x, y);
+    //     ctx.strokeStyle = province.owner.display.border_color;
+    //     ctx.moveTo(points[fromPoint][0] - 1, points[fromPoint][1]);
+    //     ctx.lineTo(points[toPoint][0] - 1, points[toPoint][1]);
+    //     console.log(points[fromPoint][0] - 1, points[fromPoint][1]);
+    //     console.log(points[toPoint][0] - 1, points[toPoint][1]);
+    //   });
+    // });
+    // ctx.stroke();
+    // ctx.closePath();
+
 
     if (this.mapView.rivers || this.mapView.borders) {
       for (let i = visible.x1; i < visible.x2; ++i) {
@@ -552,42 +619,45 @@ export default class WorldMap {
       }
     }
 
-    // draw province borders
-
     // draw selected hex
+    ctx.fillStyle = '#000';
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = 10;
+    ctx.strokeWidth = 10;
+
     const selectedHex = this.functions.getSelectedHex();
     if (selectedHex) {
       const coordinate = this.hexToCoordinate(selectedHex.x, selectedHex.y);
       const x = this.mapState.loc.x + coordinate.x;
       const y = this.mapState.loc.y + coordinate.y;
-      let origin = [this.r(x + this.HEXRADIUS), this.r(y)];
-      let pointer_1 = [this.r(x) + this.r(this.HEXRECTWIDTH), this.r(y + this.HEXHEIGHT)];
-      let pointer_2 = [this.r(x) + this.r(this.HEXRECTWIDTH), this.r(y + this.HEXHEIGHT + this.SIDELENGTH)];
-      let pointer_3 = [this.r(x) + this.r(this.HEXRADIUS), this.r(y + this.HEXRECTHEIGHT)];
-      let pointer_4 = [this.r(x), this.r(y + this.SIDELENGTH + this.HEXHEIGHT)];
-      let pointer_5 = [this.r(x), this.r(y + this.HEXHEIGHT)];
+
+      const {
+        north, north_east, south_east, south, south_west, north_west
+      } = this.getHexSidePoints(x, y);
+
       ctx.beginPath();
       ctx.lineCap = 'square';
       ctx.lineWidth = this.r(3);
       const offset = 1;
       ctx.setLineDash([this.r(5), this.r(5)]);
       ctx.strokeStyle = 'rgb(0, 0, 0)';
-      ctx.moveTo(origin[0], origin[1] + offset);
-      ctx.lineTo(pointer_1[0] - offset, pointer_1[1]);
-      ctx.moveTo(pointer_1[0] - offset, pointer_1[1]);
-      ctx.lineTo(pointer_2[0] - offset, pointer_2[1]);
-      ctx.moveTo(pointer_2[0] - offset, pointer_2[1]);
-      ctx.lineTo(pointer_3[0], pointer_3[1] - offset);
-      ctx.moveTo(pointer_3[0], pointer_3[1] - offset);
-      ctx.lineTo(pointer_4[0] + offset, pointer_4[1]);
-      ctx.moveTo(pointer_4[0] + offset, pointer_4[1]);
-      ctx.lineTo(pointer_5[0] + offset, pointer_5[1]);
-      ctx.moveTo(pointer_5[0] + offset, pointer_5[1]);
-      ctx.lineTo(origin[0], origin[1] + offset);
+      ctx.moveTo(north[0], north[1] + offset);
+      ctx.lineTo(north_east[0] - offset, north_east[1]);
+      ctx.moveTo(north_east[0] - offset, north_east[1]);
+      ctx.lineTo(south_east[0] - offset, south_east[1]);
+      ctx.moveTo(south_east[0] - offset, south_east[1]);
+      ctx.lineTo(south[0], south[1] - offset);
+      ctx.moveTo(south[0], south[1] - offset);
+      ctx.lineTo(south_west[0] + offset, south_west[1]);
+      ctx.moveTo(south_west[0] + offset, south_west[1]);
+      ctx.lineTo(north_west[0] + offset, north_west[1]);
+      ctx.moveTo(north_west[0] + offset, north_west[1]);
+      ctx.lineTo(north[0], north[1] + offset);
       ctx.stroke();
       ctx.closePath();
       ctx.setLineDash([0, 0]);
     }
+
   }
 
   decideBorderWidth(province, side, ctx) {
@@ -616,17 +686,55 @@ export default class WorldMap {
     return 3;
   }
 
+  getHexSidePoints(x, y) {
+    const cacheKey = x + '-' + y;
+    if (this._hex_points[cacheKey]) {
+      return this._hex_points[cacheKey];
+    } else {
+      const origin = [this.r(x + this.HEXRADIUS), this.r(y)];
+      const pointer_1 = [
+        Math.floor(this.r(x) + this.r(this.HEXRECTWIDTH)),
+        Math.floor(this.r(y + this.HEXHEIGHT))
+      ];
+      const pointer_2 = [
+        Math.floor(this.r(x) + this.r(this.HEXRECTWIDTH)),
+        Math.floor(this.r(y + this.HEXHEIGHT + this.SIDELENGTH))
+      ];
+      const pointer_3 = [
+        Math.floor(this.r(x) + this.r(this.HEXRADIUS)),
+        Math.floor(this.r(y + this.HEXRECTHEIGHT))
+      ];
+      const pointer_4 = [
+        Math.floor(this.r(x)),
+        Math.floor(this.r(y + this.SIDELENGTH + this.HEXHEIGHT))
+      ];
+      const pointer_5 = [
+        Math.floor(this.r(x)),
+        Math.floor(this.r(y + this.HEXHEIGHT))
+      ];
+
+      const points = {
+        north: origin,
+        north_east: pointer_1,
+        south_east: pointer_2,
+        south: pointer_3,
+        south_west: pointer_4,
+        north_west: pointer_5
+      };
+      this._hex_points[cacheKey] = points;
+      return points;
+    }
+  }
+
   drawProvinceBorders(originX, originY, cx, cy) {
-    const ctx = this.canvas.context;
+    const ctx = this.politicalMap.context;
     const x = this.mapState.loc.x + originX;
     const y = this.mapState.loc.y + originY;
 
-    let origin = [this.r(x + this.HEXRADIUS), this.r(y)];
-    let pointer_1 = [this.r(x) + this.r(this.HEXRECTWIDTH), this.r(y + this.HEXHEIGHT)];
-    let pointer_2 = [this.r(x) + this.r(this.HEXRECTWIDTH), this.r(y + this.HEXHEIGHT + this.SIDELENGTH)];
-    let pointer_3 = [this.r(x) + this.r(this.HEXRADIUS), this.r(y + this.HEXRECTHEIGHT)];
-    let pointer_4 = [this.r(x), this.r(y + this.SIDELENGTH + this.HEXHEIGHT)];
-    let pointer_5 = [this.r(x), this.r(y + this.HEXHEIGHT)];
+    const {
+      north, north_east, south_east, south, south_west, north_west
+    } = this.getHexSidePoints(x, y);
+
     let hex = this.grid[cy][cx];
 
     const foundProvince = this.findProvince(hex);
@@ -637,42 +745,56 @@ export default class WorldMap {
       // north east
       ctx.beginPath();
       offset = this.decideBorderWidth(foundProvince, 'north_east', ctx);
-      ctx.moveTo(origin[0], origin[1] + offset);
-      ctx.lineTo(pointer_1[0] - offset, pointer_1[1]);
+      ctx.moveTo(north[0], north[1] + offset);
+      ctx.lineTo(north_east[0] - offset, north_east[1]);
       ctx.stroke();
+      ctx.closePath();
 
       // east
+      ctx.beginPath();
       offset = this.decideBorderWidth(foundProvince, 'east', ctx);
-      ctx.moveTo(pointer_1[0] - offset, pointer_1[1]);
-      ctx.lineTo(pointer_2[0] - offset, pointer_2[1]);
+      ctx.moveTo(north_east[0] - offset, north_east[1]);
+      ctx.lineTo(south_east[0] - offset, south_east[1]);
       ctx.stroke();
+      ctx.closePath();
 
       // south east
+      ctx.beginPath();
       offset = this.decideBorderWidth(foundProvince, 'south_east', ctx);
-      ctx.moveTo(pointer_2[0] - offset, pointer_2[1]);
-      ctx.lineTo(pointer_3[0], pointer_3[1] - offset);
+      ctx.moveTo(south_east[0] - offset, south_east[1]);
+      ctx.lineTo(south[0], south[1] - offset);
       ctx.stroke();
+      ctx.closePath();
 
       // south west
+      ctx.beginPath();
       offset = this.decideBorderWidth(foundProvince, 'south_west', ctx);
-      ctx.moveTo(pointer_3[0], pointer_3[1] - offset);
-      ctx.lineTo(pointer_4[0] + offset, pointer_4[1]);
+      ctx.moveTo(south[0], south[1] - offset);
+      ctx.lineTo(south_west[0] + offset, south_west[1]);
       ctx.stroke();
       ctx.closePath();
 
       // west
+      ctx.beginPath();
       offset = this.decideBorderWidth(foundProvince, 'west', ctx);
-      ctx.moveTo(pointer_4[0] + offset, pointer_4[1]);
-      ctx.lineTo(pointer_5[0] + offset, pointer_5[1]);
+      ctx.moveTo(south_west[0] + offset, south_west[1]);
+      ctx.lineTo(north_west[0] + offset, north_west[1]);
       ctx.stroke();
+      ctx.closePath();
 
       // north west
+      ctx.beginPath();
       offset = this.decideBorderWidth(foundProvince, 'north_west', ctx);
-      ctx.moveTo(pointer_5[0] + offset, pointer_5[1]);
-      ctx.lineTo(origin[0], origin[1] + offset);
+      ctx.moveTo(north_west[0] + offset, north_west[1]);
+      ctx.lineTo(north[0], north[1] + offset);
       ctx.stroke();
       ctx.closePath();
     }
+  }
+
+  updateModel(mapDetails) {
+    this.mapDetails = mapDetails;
+    this._province_cache = [];
   }
 
   findProvince(hex) {
@@ -702,20 +824,20 @@ export default class WorldMap {
     var ctx = this.canvas.context;
     const x = this.mapState.loc.x + originX;
     const y = this.mapState.loc.y + originY;
-    ctx.lineWidth = 0.2;
+
+    ctx.lineWidth = 0.3;
     ctx.beginPath();
-    const origin = [this.r(x + this.HEXRADIUS), this.r(y)];
-    const pointer1 = [this.r(x) + this.r(this.HEXRECTWIDTH), this.r(y + this.HEXHEIGHT)];
-    const pointer2 = [this.r(x) + this.r(this.HEXRECTWIDTH), this.r(y + this.HEXHEIGHT + this.SIDELENGTH)];
-    const pointer3 = [this.r(x) + this.r(this.HEXRADIUS), this.r(y + this.HEXRECTHEIGHT)];
-    const pointer4 = [this.r(x), this.r(y + this.SIDELENGTH + this.HEXHEIGHT)];
-    const pointer5 = [this.r(x), this.r(y + this.HEXHEIGHT)];
-    ctx.moveTo(origin[0], origin[1]);
-    ctx.lineTo(pointer1[0], pointer1[1]);
-    ctx.lineTo(pointer2[0], pointer2[1]);
-    ctx.lineTo(pointer3[0], pointer3[1]);
-    ctx.lineTo(pointer4[0], pointer4[1]);
-    ctx.lineTo(pointer5[0], pointer5[1]);
+
+    const {
+      north, north_east, south_east, south, south_west, north_west
+    } = this.getHexSidePoints(x, y);
+
+    ctx.moveTo(north[0], north[1]);
+    ctx.lineTo(north_east[0], north_east[1]);
+    ctx.lineTo(south_east[0], south_east[1]);
+    ctx.lineTo(south[0], south[1]);
+    ctx.lineTo(south_west[0], south_west[1]);
+    ctx.lineTo(north_west[0], north_west[1]);
     ctx.closePath();
 
     var hex = this.grid[cy][cx];
@@ -735,6 +857,7 @@ export default class WorldMap {
 
     ctx.fill();
     ctx.stroke();
+
     const isHovering = this.hover_hex && this.hover_hex === hex;
     const selectedHex = this.functions.getSelectedHex();
     if (isHovering) {
@@ -755,17 +878,18 @@ export default class WorldMap {
    */
   drawEdges(originX, originY, cx, cy) {
     const ctx = this.canvas.context;
+    ctx.fillStyle = '#000';
+    ctx.strokeStyle = '#000';
+
     const view = this.mapView;
     const borderColor = 'rgb(255, 255, 255)';
     const x = this.mapState.loc.x + originX;
     const y = this.mapState.loc.y + originY;
 
-    let origin = [this.r(x + this.HEXRADIUS), this.r(y)];
-    let pointer_1 = [this.r(x) + this.r(this.HEXRECTWIDTH), this.r(y + this.HEXHEIGHT)];
-    let pointer_2 = [this.r(x) + this.r(this.HEXRECTWIDTH), this.r(y + this.HEXHEIGHT + this.SIDELENGTH)];
-    let pointer_3 = [this.r(x) + this.r(this.HEXRADIUS), this.r(y + this.HEXRECTHEIGHT)];
-    let pointer_4 = [this.r(x), this.r(y + this.SIDELENGTH + this.HEXHEIGHT)];
-    let pointer_5 = [this.r(x), this.r(y + this.HEXHEIGHT)];
+    const {
+      north, north_east, south_east, south, south_west, north_west
+    } = this.getHexSidePoints(x, y);
+
     var hex = this.grid[cy][cx];
     if (hex !== null) {
       // var width = settings.border_color_width;
@@ -776,78 +900,78 @@ export default class WorldMap {
       if (hex.edges.north_east.is_coast && view.borders) {
         ctx.lineWidth = 2;
         ctx.strokeStyle = borderColor;
-        ctx.moveTo(origin[0], origin[1]);
-        ctx.lineTo(pointer_1[0], pointer_1[1]);
+        ctx.moveTo(north[0], north[1]);
+        ctx.lineTo(north_east[0], north_east[1]);
       } else if (hex.edges.north_east.is_river && view.rivers) {
         ctx.lineWidth = 3;
         ctx.strokeStyle = "rgb(" + color.rivers +')';
-        ctx.moveTo(origin[0], origin[1]);
-        ctx.lineTo(pointer_1[0], pointer_1[1]);
+        ctx.moveTo(north[0], north[1]);
+        ctx.lineTo(north_east[0], north_east[1]);
       }
 
       // east
       if (hex.edges.east.is_coast && view.borders) {
         ctx.lineWidth = 2;
         ctx.strokeStyle = borderColor;
-        ctx.moveTo(pointer_1[0], pointer_1[1]);
-        ctx.lineTo(pointer_2[0], pointer_2[1]);
+        ctx.moveTo(north_east[0], north_east[1]);
+        ctx.lineTo(south_east[0], south_east[1]);
       } else if (hex.edges.east.is_river && view.rivers) {
         ctx.lineWidth = 3;
         ctx.strokeStyle = "rgb(" + color.rivers +')';
-        ctx.moveTo(pointer_1[0], pointer_1[1]);
-        ctx.lineTo(pointer_2[0], pointer_2[1]);
+        ctx.moveTo(north_east[0], north_east[1]);
+        ctx.lineTo(south_east[0], south_east[1]);
       }
 
       // south east
       if (hex.edges.south_east.is_coast && view.borders) {
         ctx.lineWidth = 2;
         ctx.strokeStyle = borderColor;
-        ctx.moveTo(pointer_2[0], pointer_2[1]);
-        ctx.lineTo(pointer_3[0], pointer_3[1]);
+        ctx.moveTo(south_east[0], south_east[1]);
+        ctx.lineTo(south[0], south[1]);
       } else if (hex.edges.south_east.is_river && view.rivers) {
         ctx.lineWidth = 3;
         ctx.strokeStyle = "rgb(" + color.rivers +')';
-        ctx.moveTo(pointer_2[0], pointer_2[1]);
-        ctx.lineTo(pointer_3[0], pointer_3[1]);
+        ctx.moveTo(south_east[0], south_east[1]);
+        ctx.lineTo(south[0], south[1]);
       }
 
       // south west
       if (hex.edges.south_west.is_coast && view.borders) {
         ctx.lineWidth = 2;
         ctx.strokeStyle = borderColor;
-        ctx.moveTo(pointer_3[0], pointer_3[1]);
-        ctx.lineTo(pointer_4[0], pointer_4[1]);
+        ctx.moveTo(south[0], south[1]);
+        ctx.lineTo(south_west[0], south_west[1]);
       } else if (hex.edges.south_west.is_river && view.rivers) {
         ctx.lineWidth = 3;
         ctx.strokeStyle = "rgb(" + color.rivers +')';
-        ctx.moveTo(pointer_3[0], pointer_3[1]);
-        ctx.lineTo(pointer_4[0], pointer_4[1]);
+        ctx.moveTo(south[0], south[1]);
+        ctx.lineTo(south_west[0], south_west[1]);
       }
 
       // west
       if (hex.edges.west.is_coast && view.borders) {
         ctx.lineWidth = 2;
         ctx.strokeStyle = borderColor;
-        ctx.moveTo(pointer_4[0], pointer_4[1]);
-        ctx.lineTo(pointer_5[0], pointer_5[1]);
+        ctx.moveTo(south_west[0], south_west[1]);
+        ctx.lineTo(north_west[0], north_west[1]);
       } else if (hex.edges.west.is_river && view.rivers) {
         ctx.lineWidth = 3;
         ctx.strokeStyle = "rgb(" + color.rivers +')';
-        ctx.moveTo(pointer_4[0], pointer_4[1]);
-        ctx.lineTo(pointer_5[0], pointer_5[1]);
+        ctx.moveTo(south_west[0], south_west[1]);
+        ctx.lineTo(north_west[0], north_west[1]);
       }
 
       // north west
       if (hex.edges.north_west.is_coast && view.borders) {
         ctx.lineWidth = 2;
         ctx.strokeStyle = borderColor;
-        ctx.moveTo(pointer_5[0], pointer_5[1]);
-        ctx.lineTo(origin[0], origin[1]);
+        ctx.moveTo(north_west[0], north_west[1]);
+        ctx.lineTo(north[0], north[1]);
       } else if (hex.edges.north_west.is_river && view.rivers) {
         ctx.lineWidth = 3;
         ctx.strokeStyle = "rgb(" + color.rivers +')';
-        ctx.moveTo(pointer_5[0], pointer_5[1]);
-        ctx.lineTo(origin[0], origin[1]);
+        ctx.moveTo(north_west[0], north_west[1]);
+        ctx.lineTo(north[0], north[1]);
       }
 
       ctx.stroke();
@@ -867,36 +991,7 @@ export default class WorldMap {
   clearMap() {
     const rawCanvas = this.canvas.elem[0];
     this.canvas.context.clearRect(0, 0, rawCanvas.width, rawCanvas.height);
-  }
-
-  /**
-   * Draws Province's names above their territories
-   * @param  {[]} ctx [description]
-   */
-  drawProvinces() {
-    // let ctx = this.canvas.context;
-    // if (this.mapView.territories) {
-    //   if (this.colony.provinces.length > 0) {
-    //     this.colony.provinces.forEach((p) => {
-    //       p.groups.forEach((g) => {
-    //         if (g.size > 3) {
-    //           ctx.fillStyle = '#000';
-    //           ctx.font = '24pt Arial';
-    //           ctx.textAlign = 'center';
-    //           var x = this.mapState.loc.y + (g.x * (this.SIDELENGTH + this.HEXHEIGHT) + this.SIDELENGTH),
-    //             y = this.mapState.loc.x + (g.y * this.HEXRECTWIDTH + ((g.x % 2) * this.HEXRADIUS) + this.SIDELENGTH);
-    //           ctx.fillText(p.name, this.r(y), this.r(x));
-    //           if (this.selected_province && this.selected_province === p) {
-    //             ctx.fillStyle = '#3073a9';
-    //           } else {
-    //             ctx.fillStyle = '#FFF';
-    //           }
-    //           ctx.fillText(p.name, this.r(y - 2), this.r(x - 2));
-    //         }
-    //       });
-    //     });
-    //   }
-    // }
+    this.politicalMap.context.clearRect(0, 0, rawCanvas.width, rawCanvas.height);
   }
 
   hexToCoordinate(x, y) {
@@ -927,7 +1022,6 @@ export default class WorldMap {
         const coord = this.hexToCoordinate(group.x, group.y);
         this.travel(coord.x, coord.y);
       }
-      this.drawProvinces();
     }
   }
 
@@ -976,7 +1070,6 @@ export default class WorldMap {
     if (oldzoom !== this.mapState.z) {
       this.clearMap();
       this.drawMain();
-      this.drawProvinces();
       var m_x = (x * this.mapState.z - x * oldzoom) / 1,
         m_y = (y * this.mapState.z - y * oldzoom) / 1;
       this.move(m_x, m_y);
@@ -993,7 +1086,6 @@ export default class WorldMap {
     this.mapState.loc.y += y;
     this.clearMap();
     this.drawMain();
-    this.drawProvinces();
     this.drawMinimapFrame();
   }
 
@@ -1022,7 +1114,6 @@ export default class WorldMap {
     this.mapState.loc.y = -y + (this.canvas.elem.height() / 2) * this.mapState.z;
     this.clearMap();
     this.drawMain();
-    this.drawProvinces();
     this.drawMinimapFrame();
   }
 }

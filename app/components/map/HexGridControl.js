@@ -14,6 +14,7 @@ const Divider = function Divider() {
 class HexGridControl extends Component {
   static propTypes = {
     hexes: PropTypes.array,
+    enums: PropTypes.object,
     dayData: PropTypes.object,
     timeline: PropTypes.object,
     geoforms: PropTypes.array,
@@ -32,14 +33,21 @@ class HexGridControl extends Component {
   }
 
   selectHex(hex) {
-    console.log(hex);
+    console.log('Select', hex);
     this.setState({
       selectedHex: hex
     });
   }
 
+  selectHexByCoordinate(x, y){
+    console.log('Select', this.props.hexes[x][y])
+    this.setState({
+      selectedHex: this.props.hexes[x][y]
+    })
+  }
+
   deselectHex() {
-    console.log('deselect hex')
+    console.log('Deselect hex')
     this.setState({
       selectedHex: null
     });
@@ -50,7 +58,7 @@ class HexGridControl extends Component {
   }
 
   render() {
-    const { hexes, details, geoforms, dayData, timeline } = this.props;
+    const { hexes, details, geoforms, dayData, timeline, enums } = this.props;
     if (hexes) {
       const mapViews = _.toArray(MAPVIEWS).map((v) => {
         return (<option key={v.name} value={v.map}>{v.title}</option>);
@@ -61,8 +69,10 @@ class HexGridControl extends Component {
           <div className={styles.sidebar}>
             <SelectedHex
               hex={this.state.selectedHex}
+              enums={enums}
               timeline={timeline}
               dayData={dayData}
+              select={this.selectHexByCoordinate.bind(this)}
               deselect={this.deselectHex.bind(this)}
               geoforms={geoforms}
             />

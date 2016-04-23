@@ -13,19 +13,62 @@ function fetchTimeline (modelType, timeline, currentDay, days=30) {
     .value();
 }
 
-export function province_population(province, timeline, currentDay) {
+export function province_economic(province, timeline, currentDay) {
   let popIds = _.map(province.pops, (p) => p.id);
   let days = fetchTimeline('Pop', timeline, currentDay);
 
   return _(days)
     .map(({ day, data }) => {
-      const population = _(data)
-        .filter((rawPop, idNum) => _.includes(popIds, idNum))
-        .map((p) => p.population)
-        .sum();
-      return { day: momentToDateString(day), population };
+      let successful_trades = 0;
+      let failed_trades = 0;
+      let bankrupt_times = 0;
+
+      let last_successful_trades = 0;
+      let last_failed_trades = 0;
+      let last_bankrupt_times = 0;
+
+      _.filter(data, (rawPop, idNum) => _.includes(popIds, idNum))
+        .forEach((p) => {
+          successful_trades += p.successful_trades// - last_successful_trades;
+          failed_trades += p.failed_trades// - last_failed_trades;
+          bankrupt_times += p.bankrupt_times// - last_bankrupt_times;
+
+          last_successful_trades = p.successful_trades;
+          last_failed_trades = p.failed_trades;
+          last_bankrupt_times = p.bankrupt_times;
+        });
+
+      return {
+        day: momentToDateString(day),
+        successful_trades, failed_trades, bankrupt_times
+      };
     })
     .value();
+}
+
+export function province_cumulative(province, timeline, currentDay, key) {
+  let popIds = _.map(province.pops, (p) => p.id);
+  let days = fetchTimeline('Pop', timeline, currentDay);
+
+  return _(days)
+    .map(({ day, data }) => {
+      const result = _(data)
+        .filter((rawPop, idNum) => _.includes(popIds, idNum))
+        .map((p) => p[key])
+        .sum();
+      return { day: momentToDateString(day), [key]: result };
+    })
+    .value();
+}
+
+
+
+export function province_population(province, timeline, currentDay) {
+  return province_cumulative(province, timeline, currentDay, 'population');
+}
+
+export function province_money(province, timeline, currentDay) {
+  return province_cumulative(province, timeline, currentDay, 'money');
 }
 
 // gets the pop jobs within the last 30 days
@@ -54,7 +97,6 @@ export function province_market(province, timeline, currentDay) {
   const chartData = _(_.clone(days))
     .map(({ day, data }) => {
       let newData = {}
-      console.log(data);
       data[province.id].market.history.forEach(({ good, data }) => {
         newData[good.key] = data.prices[0];
       });

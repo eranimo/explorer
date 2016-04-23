@@ -31,13 +31,14 @@ class MapPage extends Component {
     // this.props.getDayData();
   }
   render() {
-    const { details, timeline, geoforms, hexes } = this.props.world;
+    const { details, timeline, geoforms, hexes, enums } = this.props.world;
     const { dayData } = this.props.time;
     return (
       <div>
         <Header />
         <HexGridControl
           hexes={hexes}
+          enums={enums}
           details={details}
           dayData={dayData}
           geoforms={geoforms}

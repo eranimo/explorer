@@ -19,6 +19,7 @@ class HexGrid extends Component {
     const { hexes, mapView, selectHex, deselectHex, getSelectedHex, dayData } = this.props;
     const canvases = {
       mainCanvas: this.refs.hexmap,
+      politicalMap: this.refs.politicalMap,
       minimapCanvas: this.refs.minimapImage,
       frameCanvas: this.refs.minimapFrame
     };
@@ -30,7 +31,7 @@ class HexGrid extends Component {
   }
 
   componentDidUpdate() {
-    this.worldMap.mapDetails = this.getMapDetails()
+    this.worldMap.updateModel(this.getMapDetails());
     this.worldMap.setMapView(this.props.mapView);
     this.worldMap.drawAll();
   }
@@ -44,6 +45,7 @@ class HexGrid extends Component {
     return (
       <div>
         <canvas ref="hexmap" className={styles.hexmap}></canvas>
+        <canvas ref="politicalMap" className={styles.politicalMap}></canvas>
         <div id="minimap" className={styles.minimap}>
             <canvas ref="minimapImage" className={styles.minimapPart} width="200" height="200"></canvas>
             <canvas ref="minimapFrame" className={styles.minimapPart} width="200" height="200"></canvas>

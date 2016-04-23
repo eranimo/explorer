@@ -15,7 +15,6 @@ class ProvinceDetails extends Component {
   render() {
     const { province, timeline } = this.props;
 
-    const numPops = province.pops.length;
     let jobData = province_pop_jobs(province.pops, timeline, this.context.currentDay);
     const jobSeries = _.map(this.props.enums.PopType, (popType) => {
       return { field: popType.name, name: popType.title, color: popType.color };
@@ -33,10 +32,7 @@ class ProvinceDetails extends Component {
 
     const todayJob = _.countBy(_.map(province.pops, (p) => p.pop_type.title));
 
-    console.log(todayJob)
-
     let marketData = province_market(province, timeline, this.context.currentDay)
-    console.log(marketData)
 
     let marketSeries = _.map(this.props.enums.Good, (good) => {
       return { field: good.name, name: good.title, color: good.color };

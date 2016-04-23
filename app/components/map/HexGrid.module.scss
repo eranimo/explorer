@@ -10,6 +10,17 @@
   left: 0;
   bottom: 0;
   right: 0;
+  z-index: 1;
+}
+
+.politicalMap {
+  position: absolute;
+  top: 75px;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  z-index: 2;
+  pointer-events: none;
 }
 
 .minimap {
@@ -19,6 +30,7 @@
   bottom: 0;
   right: 0;
   border: 1px solid #111;
+  z-index: 3;
 }
 
 .minimapPart {
@@ -97,7 +109,6 @@
   top: 135px;
   bottom: 0;
   left: 0;
-  width: 300px;
+  width: 350px;
   z-index: 1000;
-  overflow: auto;
 }

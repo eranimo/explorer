@@ -16,6 +16,19 @@ config.entry = './app/index';
 config.output.publicPath = '/dist/';
 
 config.module.loaders.push({
+  test: /\.module\.css$/,
+  loader: ExtractTextPlugin.extract(
+    'style-loader',
+    'css-loader?modules&importLoaders=1&localIdentName=[name]__[local]___[hash:base64:5]!'
+  )
+}, {
+  test: /\.module\.scss$/,
+  loader: ExtractTextPlugin.extract(
+    'style-loader',
+    'css-loader?modules&importLoaders=1&localIdentName=[name]__[local]___[hash:base64:5]!',
+    'sass-loader?sourceMap'
+  )
+}, {
   test: /^((?!\.module).)*\.css$/,
   loader: ExtractTextPlugin.extract(
     'style-loader',
@@ -26,20 +39,7 @@ config.module.loaders.push({
   loader: ExtractTextPlugin.extract(
     'style-loader',
     'css-loader',
-    'sass-loader'
-  )
-}, {
-  test: /\.module\.css$/,
-  loader: ExtractTextPlugin.extract(
-    'style-loader',
-    'css-loader?modules&importLoaders=1&localIdentName=[name]__[local]___[hash:base64:5]',
-  )
-}, {
-  test: /\.scss$/,
-  loader: ExtractTextPlugin.extract(
-    'style-loader',
-    'css-loader?modules&importLoaders=1&localIdentName=[name]__[local]___[hash:base64:5]',
-    'sass-loader'
+    'sass-loader?sourceMap'
   )
 });
 

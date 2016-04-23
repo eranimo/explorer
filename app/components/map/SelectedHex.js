@@ -409,12 +409,6 @@ class SelectedHex extends Component {
             <dd>{_.round(ratio, 2)}%</dd>
           </dl>
 
-          <div style={{margin: '1rem 0'}}>
-            <Link to={`/details/Province/${province.id}`} className={styles.Button}>
-              More Details
-            </Link>
-          </div>
-
           <hr />
 
           <h2>Population over time</h2>

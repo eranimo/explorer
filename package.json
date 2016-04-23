@@ -1,8 +1,8 @@
 {
   "name": "electron-react-boilerplate",
-  "productName": "ElectronReact",
+  "productName": "Historia",
   "version": "0.7.1",
-  "description": "Electron application boilerplate based on React, React Router, Webpack, React Hot Loader for rapid application development",
+  "description": "Randomly generated history",
   "main": "main.js",
   "scripts": {
     "test": "better-npm-run test",

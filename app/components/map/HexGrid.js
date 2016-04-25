@@ -38,7 +38,8 @@ class HexGrid extends Component {
 
   getMapDetails() {
     const provinces = _.flatten(_.map(this.props.dayData.Country, (c) => c.provinces));
-    return { provinces };
+    const countries = _.mapValues(this.props.dayData.Country);
+    return { provinces, countries };
   }
 
   render() {

@@ -95,11 +95,14 @@ export function province_market(province, timeline, currentDay) {
   const chartData = _(_.clone(days))
     .map(({ day, data }) => {
       let newData = {}
-      data[province.id].market.history.forEach(({ good, data }) => {
-        newData[good.key] = data.prices[0];
-      });
-      return { day: momentToDateString(day), ...newData };
+      if (data[province.id]) {
+        data[province.id].market.history.forEach(({ good, data }) => {
+          newData[good.key] = data.prices[0];
+        });
+        return { day: momentToDateString(day), ...newData };
+      }
     })
+    .filter()
     .value();
   return chartData;
 }

@@ -305,6 +305,7 @@ class SelectedHex extends Component {
   renderGoodPriceChart(good) {
     const province = this.getProvinceAtHex();
     let data = province_market(province, this.props.timeline, this.context.currentDay)
+    console.log(data)
     return this.renderLineChart(data, good.name, good.color, (i) => '$' + i.toLocaleString())
   }
 

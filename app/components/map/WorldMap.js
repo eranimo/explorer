@@ -658,6 +658,23 @@ export default class WorldMap {
       ctx.setLineDash([0, 0]);
     }
 
+    ctx.font = '20pt Arial';
+    ctx.textAlign = 'center';
+
+    _.mapValues(this.mapDetails.countries, (country) => {
+      country.groups.forEach(({ x_coord, y_coord }) => {
+        let { x, y } = this.hexToCoordinate(x_coord, y_coord);
+
+        x = this.r(Math.round(this.mapState.loc.x + x));
+        y = this.r(Math.round(this.mapState.loc.y + y));
+
+        ctx.fillStyle = 'black';
+        ctx.fillText(country.name, x, y);
+        ctx.fillStyle = country.display.border_color;
+        ctx.fillText(country.name, x - 1, y - 1);
+      });
+    });
+
   }
 
   decideBorderWidth(province, side, ctx) {

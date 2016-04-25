@@ -68,6 +68,12 @@ app.on('ready', () => {
       }, {
         type: 'separator'
       }, {
+        label: 'Reload',
+        accelerator: 'Command+R',
+        click() {
+          mainWindow.restart();
+        }
+      }, {
         label: 'Quit',
         accelerator: 'Command+Q',
         click() {
@@ -107,6 +113,12 @@ app.on('ready', () => {
         label: 'Minimize',
         accelerator: 'Command+M',
         selector: 'performMiniaturize:'
+      }, {
+        label: 'Reload',
+        accelerator: 'Command+R',
+        click() {
+          mainWindow.restart();
+        }
       }, {
         label: 'Close',
         accelerator: 'Command+W',

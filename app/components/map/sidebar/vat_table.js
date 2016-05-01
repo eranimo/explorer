@@ -21,7 +21,7 @@ export default class VATTable extends Component {
         <tbody>
           {vat && vat.map(({ good, tax }, id) => {
             return (
-              <tr id={id}>
+              <tr key={id}>
                 <td>{formatGood(good)}</td>
                 <td>{_.round(tax * 100, 2)}%</td>
               </tr>

@@ -2,6 +2,8 @@ import React, { Component, PropTypes } from 'react';
 import { formatCurrency } from './utils';
 import styles from 'components/map/SelectedHex.module.scss';
 
+import PopInventory from './pop_inventory';
+
 export default class MerchantTable extends Component {
   static propTypes = {
     pops: PropTypes.array.isRequired

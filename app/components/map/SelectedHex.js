@@ -428,6 +428,10 @@ class SelectedHex extends Component {
           </TabPanel>
           <TabPanel>
             <VATTable vat={province.owner.vat_tax} />
+            <dl>
+              <dt>Cash Reserves</dt>
+              <dd>{formatCurrency(province.owner.money)}</dd>
+            </dl>
           </TabPanel>
         </Tabs>
         {this.renderDetails()}

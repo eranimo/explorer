@@ -26,248 +26,18 @@ import {
 
 import ReactTooltip from 'react-tooltip';
 
-class PopulationChartTooltip extends Component {
-  render () {
-    const value = this.props.payload[0].value;
-    return (
-      <div>
-        <div style={{color: '#DDD', fontWeight: 'bold', fontSize: '10px'}}>
-          {convertToMoment(this.props.label).format('LL')}
-        </div>
-        <div style={{color: 'white', fontSize: '14px'}}>
-          {value ? this.props.tickFormatter(value) : ''}
-        </div>
-      </div>
-    );
-  }
-}
+import {
+  PopulationChartTooltip,
+  EconomicChartTooltip,
+  JobChartTooltip
+} from './sidebar/tooltips'
+import PopTable from './sidebar/pop_table';
+import PopInventory from './sidebar/pop_inventory';
+import MerchantTable from './sidebar/merchant_table';
+import { formatCurrency } from './sidebar/utils';
+import MarketTable from './sidebar/market_table';
+import VATTable from './sidebar/vat_table';
 
-class EconomicChartTooltip extends Component {
-  render () {
-    const value1 = this.props.payload[0].value;
-    const value2 = this.props.payload[1].value;
-    const value3 = this.props.payload[2].value;
-    return (
-      <div>
-        <span style={{backgroundColor: '#333', color: '#DDD', fontWeight: 'bold', fontSize: '10px'}}>
-          {convertToMoment(this.props.label).format('LL')}
-        </span>
-        <br />
-        <span style={{backgroundColor: '#333', color: '#08CC08', fontSize: '14px'}}>
-          {!_.isUndefined(value1) ? this.props.tickFormatter(value1) : ''}
-        </span>
-        <br />
-        <span style={{backgroundColor: '#333', color: 'red', fontSize: '14px'}}>
-          {!_.isUndefined(value2) ? this.props.tickFormatter(value2) : ''}
-        </span>
-        <br />
-        <span style={{backgroundColor: '#333', color: 'lightblue', fontSize: '14px'}}>
-          {!_.isUndefined(value3) ? this.props.tickFormatter(value3) : ''}
-        </span>
-      </div>
-    );
-  }
-}
-
-class JobChartTooltip extends Component {
-  render () {
-    return (
-      <div>
-        <span style={{backgroundColor: '#333', color: '#DDD', fontWeight: 'bold', fontSize: '10px'}}>
-          {convertToMoment(this.props.label).format('LL')}
-        </span>
-        <br />
-        <span style={{backgroundColor: '#333'}}>
-          {this.props.payload.map((i) => {
-            return (
-              <span style={{color: 'white'}}>
-                <span style={{color: i.color}}>{i.name}</span><span style={{color: 'white'}}>:</span>&nbsp;
-                <span style={{color: 'white'}}>{i.value ? i.value : 0}</span>
-                <br />
-              </span>
-            )
-          })}
-        </span>
-      </div>
-    )
-  }
-}
-
-function formatCurrency(number) {
-  const formatted = '$' + _.round(number, 2).toLocaleString();
-  if (number < 0) {
-    return <span style={{color: 'red'}}>{formatted}</span>;
-  } else if (number > 0) {
-    return <span style={{color: 'rgb(8, 204, 8)'}}>{formatted}</span>;
-  }
-  return formatted;
-}
-
-class PopInventory extends Component {
-  static propTypes = {
-    inventory: PropTypes.object.isRequired
-  };
-
-  render () {
-    let { inventory } = this.props;
-    inventory = _.filter(inventory, (i) => {
-      return i.contents[0] && i.contents[0].amount > 0
-    });
-    if (inventory.length === 0) {
-      return (<span>None</span>);
-    }
-    return (
-      <div>
-        {inventory.map((i) => {
-          return (
-            <div>
-              <span style={{color: i.good.color}}>{i.good.title}</span>: &nbsp;
-              {i.contents[0] ? i.contents[0].amount : 0}
-            </div>
-          );
-        })}
-      </div>
-    );
-  }
-}
-
-class PopTable extends Component {
-  static propTypes = {
-    pops: PropTypes.array.isRequired
-  };
-
-  render () {
-    const { pops } = this.props;
-    return (
-      <table className={styles.PopTable}>
-        <thead>
-          <tr>
-            <th>Job</th>
-            <th>Size</th>
-            <th>+/-</th>
-            <th>Money</th>
-            <th>Profit</th>
-            <th># Trades</th>
-            <th>Trade Success</th>
-            <th data-tip="Bankruptcies"># B</th>
-          </tr>
-        </thead>
-        <tbody>
-          {_.orderBy(pops, 'id').map((pop, id) => {
-            const total_trades = pop.successful_trades + pop.failed_trades;
-            return (
-              <tr key={id}>
-                <td>{pop.pop_job.title}</td>
-                <td>{pop.population.toLocaleString()}</td>
-                <td>{(pop.population - pop.population_yesterday).toLocaleString()}</td>
-                <td>{formatCurrency(pop.money)}</td>
-                <td>{formatCurrency(pop.money - pop.money_yesterday)}</td>
-                <td>{total_trades.toLocaleString()}</td>
-                <td>{_.round(pop.successful_trades / total_trades * 100, 2).toLocaleString()}%</td>
-                <td>{pop.bankrupt_times.toLocaleString()}</td>
-              </tr>
-            )
-          })}
-        </tbody>
-      </table>
-    )
-  }
-}
-
-class MerchantTable extends Component {
-  static propTypes = {
-    pops: PropTypes.array.isRequired
-  };
-
-  render() {
-    const { pops } = this.props;
-    const merchants = _.filter(pops, (p) => p.pop_job.name === 'merchant')
-    return (
-      <table className={styles.PopTable}>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Location</th>
-            <th>Money</th>
-            <th>Profit</th>
-            <th># Trades</th>
-            <th># B</th>
-            <th>Trade Success</th>
-            <th>Trade Good</th>
-            <th>Trade Location</th>
-            <th>Trade Amount</th>
-            <th>Inventory</th>
-          </tr>
-        </thead>
-        <tbody>
-          {_.orderBy(merchants, 'id').map((pop, id) => {
-            const total_trades = pop.successful_trades + pop.failed_trades;
-            console.log(pop)
-            return (
-              <tr key={id}>
-                <td data-tip={pop.id}>{id}</td>
-                <td><a onClick={()=> this.props.select(pop.location.x, pop.location.y)}>{pop.location.name}</a></td>
-                <td>{formatCurrency(pop.money)}</td>
-                <td>{formatCurrency(pop.money - pop.money_yesterday)}</td>
-                <td>{total_trades.toLocaleString()}</td>
-                <td>{pop.bankrupt_times.toLocaleString()}</td>
-                <td>{_.round(pop.successful_trades / total_trades * 100, 2).toLocaleString()}%</td>
-                <td>
-                  {pop.trade_good ?
-                    <span style={{color: pop.trade_good.color}}>
-                      {pop.trade_good.title}
-                    </span>
-                  : 'None'}
-                </td>
-                <td>{pop.trade_location ?
-                  <a onClick={() => this.props.select(pop.trade_location.hex.x, pop.trade_location.hex.y)}>{pop.trade_location.name}</a>
-                : 'None'}</td>
-                <td>{pop.trade_amount}</td>
-                <td><PopInventory inventory={pop.inventory} /></td>
-              </tr>
-            )
-          })}
-          </tbody>
-      </table>
-    )
-  }
-}
-
-class MarketTable extends Component {
-  static propTypes = {
-    province: PropTypes.object.isRequired
-  };
-
-  render() {
-    const { province } = this.props;
-    return (
-      <table className={styles.PopTable}>
-        <thead>
-          <tr>
-            <th>Good</th>
-            <th>Price</th>
-            <th>Demand</th>
-            <th>Supply</th>
-            <th>Trades</th>
-          </tr>
-        </thead>
-        <tbody>
-          {province && province.market.history.map(({ good, data }, id) => {
-            return (
-              <tr id={id}>
-                <td>{good.title}</td>
-                <td>{formatCurrency(data.prices[0])}</td>
-                <td>{data.buy_orders[0]}</td>
-                <td>{data.sell_orders[0]}</td>
-                <td>{data.trades[0]}</td>
-              </tr>
-            )
-          })}
-        </tbody>
-      </table>
-    )
-  }
-}
 
 class SelectedHex extends Component {
   static propTypes = {
@@ -624,7 +394,8 @@ class SelectedHex extends Component {
 
   render() {
     // find occupied provinces
-    if (!this.getProvinceAtHex()) {
+    const province = this.getProvinceAtHex();
+    if (!province) {
       return (
         <div>
           {this.renderTitle()}
@@ -656,7 +427,7 @@ class SelectedHex extends Component {
             {this.renderProvinceTab()}
           </TabPanel>
           <TabPanel>
-            Country info here
+            <VATTable vat={province.owner.vat_tax} />
           </TabPanel>
         </Tabs>
         {this.renderDetails()}

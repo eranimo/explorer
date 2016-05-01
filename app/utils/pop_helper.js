@@ -78,7 +78,7 @@ export function province_pop_jobs(pops, timeline, currentDay) {
       const newData = _(data)
         .filter((rawPop, idNum) => _.includes(popIds, idNum))
         .map((rawPop) => {
-          return rawPop.pop_type.key
+          return rawPop.pop_job.key
         })
         .countBy()
         .value();

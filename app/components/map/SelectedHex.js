@@ -129,7 +129,7 @@ class PopTable extends Component {
             const total_trades = pop.successful_trades + pop.failed_trades;
             return (
               <tr key={id}>
-                <td>{pop.pop_type.title}</td>
+                <td>{pop.pop_job.title}</td>
                 <td>{pop.population.toLocaleString()}</td>
                 <td>{(pop.population - pop.population_yesterday).toLocaleString()}</td>
                 <td>{formatCurrency(pop.money)}</td>
@@ -141,6 +141,57 @@ class PopTable extends Component {
             )
           })}
         </tbody>
+      </table>
+    )
+  }
+}
+
+class MerchantTable extends Component {
+  static propTypes = {
+    pops: PropTypes.array.isRequired
+  };
+
+  render() {
+    const { pops } = this.props;
+    const merchants = _.filter(pops, (p) => p.pop_job.name === 'merchant')
+    return (
+      <table className={styles.PopTable}>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Location</th>
+            <th>Money</th>
+            <th>Profit</th>
+            <th># Trades</th>
+            <th># B</th>
+            <th>Trade Success</th>
+            <th>Trade Good</th>
+            <th>Trade Location</th>
+            <th>Trade Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          {_.orderBy(merchants, 'id').map((pop, id) => {
+            const total_trades = pop.successful_trades + pop.failed_trades;
+            console.log(pop)
+            return (
+              <tr key={id}>
+                <td data-tip={pop.id}>{id}</td>
+                <td><a onClick={()=> this.props.select(pop.location.x, pop.location.y)}>{pop.location.name}</a></td>
+                <td>{formatCurrency(pop.money)}</td>
+                <td>{formatCurrency(pop.money - pop.money_yesterday)}</td>
+                <td>{total_trades.toLocaleString()}</td>
+                <td>{pop.bankrupt_times.toLocaleString()}</td>
+                <td>{_.round(pop.successful_trades / total_trades * 100, 2).toLocaleString()}%</td>
+                <td>{pop.trade_good ? pop.trade_good.title : 'None'}</td>
+                <td>{pop.trade_location ?
+                  <a onClick={() => this.props.select(pop.trade_location.hex.x, pop.trade_location.hex.y)}>{pop.trade_location.name}</a>
+                : 'None'}</td>
+                <td>{pop.trade_amount}</td>
+              </tr>
+            )
+          })}
+          </tbody>
       </table>
     )
   }
@@ -305,14 +356,12 @@ class SelectedHex extends Component {
   renderGoodPriceChart(good) {
     const province = this.getProvinceAtHex();
     let data = province_market(province, this.props.timeline, this.context.currentDay)
-    console.log(data)
     return this.renderLineChart(data, good.name, good.color, (i) => '$' + i.toLocaleString())
   }
 
   renderEconomyChart() {
     const province = this.getProvinceAtHex();
     let data = province_economic(province, this.props.timeline, this.context.currentDay)
-    console.log(data)
     const tickFormatter = (i) => _.round(i).toLocaleString()
     return (
       <div className={styles.Chart}>
@@ -349,7 +398,7 @@ class SelectedHex extends Component {
     let data = province_pop_jobs(province.pops, this.props.timeline, this.context.currentDay)
     const tickFormatter = (i) => _.round(i).toLocaleString()
     console.log('d', data)
-    const jobs = this.props.enums.PopType;
+    const jobs = this.props.enums.PopJob;
     return (
       <div className={styles.Chart}>
         <AreaChart width={300} height={250} data={data}
@@ -493,6 +542,7 @@ class SelectedHex extends Component {
           <TabList>
             <Tab>Pops</Tab>
             <Tab>Market</Tab>
+            <Tab>Merchants</Tab>
           </TabList>
           <TabPanel>
             <h2>Pops in Province</h2>
@@ -508,8 +558,16 @@ class SelectedHex extends Component {
               enums={this.props.enums}
               province={province} />
 
+            <dl>
+              <dt>Most Demanded Good</dt>
+              <dd>{province.market.most_demanded_good ? province.market.most_demanded_good.title : 'None'}</dd>
+              <dt>Most Profitable Job</dt>
+              <dd>{province.market.most_profitable_pop_job ? province.market.most_profitable_pop_job.title : 'None'}</dd>
+              <dt>Most Expensive Good</dt>
+              <dd>{province.market.most_expensive_good ? province.market.most_expensive_good.title : 'None'}</dd>
+            </dl>
+
             {_.values(Goods).map((i) => {
-              console.log(i)
               return (
                 <div>
                   <hr />
@@ -518,6 +576,10 @@ class SelectedHex extends Component {
                 </div>
               );
             })}
+          </TabPanel>
+          <TabPanel>
+            <h2>Merchants</h2>
+            <MerchantTable pops={province.pops} select={this.props.select} />
           </TabPanel>
         </Tabs>
       );

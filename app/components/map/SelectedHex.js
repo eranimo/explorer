@@ -103,6 +103,34 @@ function formatCurrency(number) {
   return formatted;
 }
 
+class PopInventory extends Component {
+  static propTypes = {
+    inventory: PropTypes.object.isRequired
+  };
+
+  render () {
+    let { inventory } = this.props;
+    inventory = _.filter(inventory, (i) => {
+      return i.contents[0] && i.contents[0].amount > 0
+    });
+    if (inventory.length === 0) {
+      return (<span>None</span>);
+    }
+    return (
+      <div>
+        {inventory.map((i) => {
+          return (
+            <div>
+              <span style={{color: i.good.color}}>{i.good.title}</span>: &nbsp;
+              {i.contents[0] ? i.contents[0].amount : 0}
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+}
+
 class PopTable extends Component {
   static propTypes = {
     pops: PropTypes.array.isRequired
@@ -168,6 +196,7 @@ class MerchantTable extends Component {
             <th>Trade Good</th>
             <th>Trade Location</th>
             <th>Trade Amount</th>
+            <th>Inventory</th>
           </tr>
         </thead>
         <tbody>
@@ -183,11 +212,18 @@ class MerchantTable extends Component {
                 <td>{total_trades.toLocaleString()}</td>
                 <td>{pop.bankrupt_times.toLocaleString()}</td>
                 <td>{_.round(pop.successful_trades / total_trades * 100, 2).toLocaleString()}%</td>
-                <td>{pop.trade_good ? pop.trade_good.title : 'None'}</td>
+                <td>
+                  {pop.trade_good ?
+                    <span style={{color: pop.trade_good.color}}>
+                      {pop.trade_good.title}
+                    </span>
+                  : 'None'}
+                </td>
                 <td>{pop.trade_location ?
                   <a onClick={() => this.props.select(pop.trade_location.hex.x, pop.trade_location.hex.y)}>{pop.trade_location.name}</a>
                 : 'None'}</td>
                 <td>{pop.trade_amount}</td>
+                <td><PopInventory inventory={pop.inventory} /></td>
               </tr>
             )
           })}

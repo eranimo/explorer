@@ -1,8 +1,18 @@
 import React, { Component, PropTypes } from 'react';
 import styles from './HexGrid.module.scss';
 import _ from 'lodash';
+import { connect } from 'react-redux';
 
 import WorldMap from './WorldMap';
+
+
+function mapStateToProps(state) {
+  return {
+    dayData: state.time.dayData,
+    details: state.world.details,
+    hexes: state.world.hexes
+  };
+}
 
 class HexGrid extends Component {
   static propTypes = {
@@ -56,4 +66,4 @@ class HexGrid extends Component {
   }
 }
 
-export default HexGrid;
+export default connect(mapStateToProps)(HexGrid);

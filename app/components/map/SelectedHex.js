@@ -1,5 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 import _ from 'lodash';
+import { connect } from 'react-redux';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import { Link } from 'react-router';
 import styles from './SelectedHex.module.scss';
@@ -38,6 +39,13 @@ import { formatCurrency } from './sidebar/utils';
 import MarketTable from './sidebar/market_table';
 import VATTable from './sidebar/vat_table';
 
+function mapStateToProps(state) {
+  return {
+    dayData: state.time.dayData,
+    ...state.world
+  };
+}
+
 
 class SelectedHex extends Component {
   static propTypes = {
@@ -70,9 +78,10 @@ class SelectedHex extends Component {
   }
 
   renderHexTab() {
-    const { hex, geoforms } = this.props;
+    const { hex, geoforms, enums } = this.props;
     let geoform = _.find(geoforms, { id: hex.geoform });
     geoform = geoform && geoform.type || 'None';
+    const biome = enums.Biome[hex.biome.key]
     return (
       <div>
         <h2>Details</h2>
@@ -81,7 +90,7 @@ class SelectedHex extends Component {
           <dd>{hex.x}, {hex.y}</dd>
 
           <dt>Biome</dt>
-          <dd>{hex.biome.title}</dd>
+          <dd>{biome.title}</dd>
 
           <dt>Type</dt>
           <dd>{_.capitalize(hex.type)}</dd>
@@ -103,12 +112,14 @@ class SelectedHex extends Component {
 
           <dt>Natural Resources</dt>
           <dd>
-            {hex.natural_resources.length > 0 ?
-              hex.natural_resources.map(_.capitalize).join(', ')
+            {hex.res.length > 0 ?
+              hex.res.map(_.capitalize).join(', ')
             : 'None'}
           </dd>
         </dl>
 
+        {/*
+        TODO: compute neighbors
         <hr />
         <h2>Neighbors</h2>
         <dl>
@@ -120,7 +131,7 @@ class SelectedHex extends Component {
               </span>
             )
           })}
-        </dl>
+        </dl>*/}
       </div>
     );
   }
@@ -473,4 +484,4 @@ class SelectedHex extends Component {
   }
 }
 
-export default SelectedHex;
+export default connect(mapStateToProps)(SelectedHex);

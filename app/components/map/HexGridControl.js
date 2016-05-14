@@ -69,12 +69,8 @@ class HexGridControl extends Component {
           <div className={styles.sidebar}>
             <SelectedHex
               hex={this.state.selectedHex}
-              enums={enums}
-              timeline={timeline}
-              dayData={dayData}
               select={this.selectHexByCoordinate.bind(this)}
               deselect={this.deselectHex.bind(this)}
-              geoforms={geoforms}
             />
           </div>
         );
@@ -93,9 +89,6 @@ class HexGridControl extends Component {
           </div>
           {selectedHex}
           <HexGrid
-            hexes={hexes}
-            details={details}
-            dayData={dayData}
             mapView={this.state.mapView}
             selectHex={this.selectHex.bind(this)}
             deselectHex={this.deselectHex.bind(this)}

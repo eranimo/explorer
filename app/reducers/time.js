@@ -22,7 +22,7 @@ const MAX_SPEED = 3;
 const INITIAL_STATE = {
   currentDay: wrapDate('0001-01-01'),
   speed: MIN_SPEED,
-  dayData: null,
+  dayData: {},
   timeline: {},
   isPlaying: false
 };

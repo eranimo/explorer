@@ -1,9 +1,15 @@
-import { LOAD_WORLD_DATA, SELECT_DAY } from '../actions/world';
+import { convertToMoment } from 'utils/dates'
+import { LOAD_WORLD_DATA, SELECT_DAY } from '../actions/world'
 
 const INITIAL_STATE = {
-  isLoaded: false
+  isLoaded: false,
+  timeline: {},
+  data: {},
+  timeRange: {
+    start: convertToMoment('0001-01-01'),
+    end: convertToMoment('0001-01-01')
+  }
 };
-import { convertToMoment } from '../utils/dates';
 
 
 export default function world(state = INITIAL_STATE, action) {
@@ -13,16 +19,7 @@ export default function world(state = INITIAL_STATE, action) {
       return {
         ...state,
         isLoaded: true,
-        details: action.data.details,
-        hexes: action.data.hexes,
-        enums: action.data.enums,
-        geoforms: action.data.geoforms,
-        timeline: action.data.timeline,
-        data: action.data.data,
-        timeRange: {
-          start: convertToMoment(action.data.times.start_day),
-          end: convertToMoment(action.data.times.end_day)
-        }
+        ...action.data
       };
     default:
       return state;

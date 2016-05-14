@@ -11,7 +11,10 @@ const config = Object.create(baseConfig);
 
 config.devtool = 'source-map';
 
-config.entry = './app/index';
+config.entry = [
+  'babel-polyfill',
+  './app/index'
+];
 
 config.output.publicPath = '/dist/';
 

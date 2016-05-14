@@ -480,9 +480,9 @@ export default class WorldMap {
     }
     for (let i = 0; i < this.size; i++) {
       for (let j = 0; j < this.size; j++) {
-        var cell = this.grid[j][i];
+        let cell = this.grid[j][i];
         if (cell) {
-          var color;
+          let color;
           if (this.mapView.colors) {
             // if (cell.province_color) {
             //   color = cell.province_color.split(',');
@@ -492,6 +492,7 @@ export default class WorldMap {
           } else {
             color = cell.colors[this.mapView.map];
           }
+          color = color.split(',')
           drawPixel(i, j, color[0], color[1], color[2], 255);
         } else {
           drawPixel(i, j, 0, 0, 0, 255);
@@ -815,8 +816,9 @@ export default class WorldMap {
   }
 
   findProvince(hex) {
-    if (this._province_cache[hex.id]) {
-      return this._province_cache[hex.id];
+    const hexString = `${hex.x},${hex.y}`
+    if (this._province_cache[hexString]) {
+      return this._province_cache[hexString];
     } else {
       let foundProvince;
       _.each(this.mapDetails.provinces, (province) => {
@@ -824,7 +826,7 @@ export default class WorldMap {
           foundProvince = province;
         }
       });
-      this._province_cache[hex.id] = foundProvince;
+      this._province_cache[hexString] = foundProvince;
       return foundProvince;
     }
   }
@@ -861,7 +863,6 @@ export default class WorldMap {
     let color;
     if (hex) {
       color = hex.colors[this.mapView.map];
-      color = color.join(',');
     } else {
       color = '0,0,0';
     }
@@ -880,7 +881,7 @@ export default class WorldMap {
     if (isHovering) {
       ctx.fillStyle = 'rgba(150, 150, 150, 0.4)';
       ctx.fill();
-    } else if (selectedHex && selectedHex.id === hex.id) {
+    } else if (selectedHex && selectedHex.x === hex.x && selectedHex.y === hex.y) {
       ctx.fillStyle = 'rgba(110, 110, 110, 0.4)';
       ctx.fill();
     }
@@ -1020,7 +1021,7 @@ export default class WorldMap {
 
   selectHex(hex) {
     const selectedHex = this.functions.getSelectedHex();
-    if (selectedHex && selectedHex.id === hex.id) {
+    if (selectedHex && selectedHex.x === hex.x && selectedHex.y === hex.y) {
       console.log('deselect');
       this.functions.deselectHex();
     } else {

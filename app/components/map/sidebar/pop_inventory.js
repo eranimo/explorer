@@ -2,7 +2,7 @@ import React, { Component, PropTypes } from 'react';
 
 export default class PopInventory extends Component {
   static propTypes = {
-    inventory: PropTypes.object.isRequired
+    inventory: PropTypes.array.isRequired
   };
 
   render () {

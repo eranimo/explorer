@@ -427,11 +427,44 @@ class SelectedHex extends Component {
             {this.renderProvinceTab()}
           </TabPanel>
           <TabPanel>
-            <VATTable vat={province.owner.vat_tax} />
+            <h2>Details</h2>
             <dl>
+              <dt>Name</dt><dd>{province.owner.name}</dd>
+              <dt># of Provinces</dt><dd>{province.owner.provinces.length}</dd>
+              <dt>Total Population</dt><dd>{province.owner.total_population.toLocaleString()}</dd>
               <dt>Cash Reserves</dt>
               <dd>{formatCurrency(province.owner.money)}</dd>
             </dl>
+            <hr />
+            <h2>Provinces</h2>
+            <table className={styles.PopTable}>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Population</th>
+                  <th># of Pops</th>
+                </tr>
+              </thead>
+              <tbody>
+                {_.reverse(_.orderBy(province.owner.provinces, 'population')).map((province) => {
+                  return (
+                    <tr>
+                      <td>
+                        <a onClick={() => this.props.select(province.hex.x, province.hex.y)}>
+                        {province.name}&nbsp;
+                        {province.is_capital ? <span data-tip="Capital Province" className="fa fa-star"></span> : ''}
+                        </a>
+                      </td>
+                      <td>{province.population.toLocaleString()}</td>
+                      <td>{province.pops.length.toLocaleString()}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+            <hr />
+            <h2>VAT Tax Rates</h2>
+            <VATTable vat={province.owner.vat_tax} />
           </TabPanel>
         </Tabs>
         {this.renderDetails()}

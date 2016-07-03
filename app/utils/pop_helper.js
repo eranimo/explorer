@@ -2,6 +2,7 @@ import { convertToMoment, momentToDateString } from './dates';
 
 
 function fetchTimeline (modelType, timeline, currentDay, days=30) {
+  console.log(modelType, timeline, currentDay)
   const firstDay = currentDay.clone().subtract(days, 'days');
   const nextDay = currentDay.clone().add(1, 'days');
   return _(timeline[modelType])

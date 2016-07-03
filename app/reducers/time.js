@@ -1,12 +1,13 @@
 import processDay from '../utils/processDay';
 import moment from 'moment';
+import { convertToMoment, momentToDateString } from 'utils/dates'
 
 import {
   PLAY,
   PAUSE,
   PREV_DAY,
   NEXT_DAY,
-  GET_DAY_DATA,
+  FETCH_NEXT_DAY,
   GO_TO_DAY,
   SLOWER,
   FASTER
@@ -20,11 +21,12 @@ const MIN_SPEED = 1;
 const MAX_SPEED = 3;
 
 const INITIAL_STATE = {
-  currentDay: wrapDate('0001-01-01'),
-  speed: MIN_SPEED,
-  dayData: {},
-  timeline: {},
-  isPlaying: false
+  currentDay: wrapDate('0001-01-01'), // moment object of current day
+  lastFetchedDay: wrapDate('0001-01-01'), // last day we have fetched
+  dayIndex: 0, // index of current day in the timeline
+  speed: MIN_SPEED, // how fast the simulation is running
+  timeline: [], // an array of all days in history
+  isPlaying: false, // actively fetching new days in a loop
 };
 window.speed = MIN_SPEED;
 
@@ -32,9 +34,10 @@ function limitBetween(low, high, value) {
   return Math.max(Math.min(value, high), low);
 }
 
-export default function counter(state = INITIAL_STATE, action) {
+export default function time(state = INITIAL_STATE, action) {
   let speed;
   switch (action.type) {
+    // time controls
     case PLAY:
       return {
         ...state,
@@ -45,52 +48,66 @@ export default function counter(state = INITIAL_STATE, action) {
         ...state,
         isPlaying: false
       };
+
+    // day changing
     case PREV_DAY:
       if (state.currentDay === INITIAL_STATE.currentDay) {
         return { ...state };
       }
       return {
         ...state,
-        currentDay: wrapDate(state.currentDay).subtract(1, 'day')
+        currentDay: wrapDate(state.currentDay).subtract(1, 'day'),
+        dayIndex: state.dayIndex - 1
       };
     case NEXT_DAY:
       return {
         ...state,
-        currentDay: wrapDate(state.currentDay).add(1, 'day')
+        currentDay: wrapDate(state.currentDay).add(1, 'day'),
+        dayIndex: state.dayIndex + 1
       };
+    case GO_TO_DAY:
+      const newDay = wrapDate(action.payload);
+      const dayDiff = state.dayIndex + newDay.diff(state.currentDay, 'day');
+      return {
+        ...state,
+        currentDay: newDay,
+        dayIndex: dayDiff
+      };
+
+    // time speed controls
     case SLOWER:
       speed = limitBetween(MIN_SPEED, MAX_SPEED, state.speed - 1);
       window.speed = speed;
       return { ...state, speed };
+
     case FASTER:
       speed = limitBetween(MIN_SPEED, MAX_SPEED, state.speed + 1);
       window.speed = speed;
       return { ...state, speed };
-    case GET_DAY_DATA:
-      const { timeline, data, enums, hexes } = action.data;
-      const cachedDayData = state.timeline[state.currentDay];
-      if (cachedDayData) {
-        console.log('%cToday\s data (cached): %O', 'font-weight: bold', cachedDayData);
-        return { ...state, dayData: cachedDayData }
-      } else {
-        const dayData = processDay(timeline, data, enums, hexes, state.currentDay);
-        console.log('%cToday\s data: %O', 'font-weight: bold', dayData);
-        console.log(state)
+
+    // get the next day from the server
+    // and store it in the timeline
+    case FETCH_NEXT_DAY:
+      const { data, day, enums, hexes } = action.payload;
+
+      if (state.dayIndex == state.timeline.length + 1) {
+        console.log('Fetching the next day');
         return {
           ...state,
-          dayData,
-          timeline: {
+          timeline: [
             ...state.timeline,
-            [state.currentDay]: dayData
-          }
+            {
+              day: day,
+              data: processDay(data, enums, hexes)
+            }
+          ],
+          lastFetchedDay: day
         };
+      } else if (state.dayIndex > state.timeline.length + 1){
+        throw Error("You can only fetch one day at a time!");
       }
-    case GO_TO_DAY:
-      console.log(action.data)
-      return {
-        ...state,
-        currentDay: wrapDate(action.data)
-      };
+      return state;
+
     default:
       return state;
   }

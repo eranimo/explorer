@@ -1,4 +1,5 @@
 import React, { Component, PropTypes } from 'react';
+import moment from 'moment';
 import _ from 'lodash';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
@@ -14,7 +15,8 @@ function mapStateToProps({ time, world }) {
     currentDay: time.currentDay,
     speed: time.speed,
     isPlaying: time.isPlaying,
-    timeRange: world.timeRange,
+    timeline: time.timeline,
+    dayIndex: time.dayIndex,
     isLoaded: world.isLoaded
   };
 }
@@ -29,20 +31,20 @@ class Controls extends Component {
   };
 
   canGoBack() {
-    if (this.props.currentDay.isSame(this.props.timeRange.start)) return false;
-    return this.props.currentDay.isAfter(this.props.timeRange.start);
+    return this.props.dayIndex !== 0;
   }
 
   canGoForward() {
-    return this.props.currentDay.isBefore(this.props.timeRange.end);
+    return true
+    // return this.props.currentDay.isBefore(this.props.timeRange.end);
   }
 
   goToFirst() {
-    this.props.goToDay(this.props.timeRange.start);
+    this.props.goToFirstDay();
   }
 
   goToLast() {
-    this.props.goToDay(this.props.timeRange.end);
+    this.props.goToDay(this.props.lastFetchedDay);
   }
 
   render() {
@@ -91,8 +93,8 @@ class Controls extends Component {
               onChange={this.props.goToDay}
               dateFormat="MMMM Do [Y]Y"
               popoverTargetAttachment="bottom left"
-              minDate={this.props.timeRange.start}
-              maxDate={this.props.timeRange.end} />
+              minDate={moment('0001-01-01')}
+              maxDate={this.props.lastFetchedDay} />
           </div>
         </label>
 

@@ -4,12 +4,17 @@ var webpack = require('webpack')
 const path = require('path');
 
 module.exports = {
+  target: 'electron-renderer',
   module: {
-    loaders: [{
-      test: /\.jsx?$/,
-      loaders: ['babel-loader'],
-      exclude: /node_modules/
-    }]
+    loaders: [
+      {
+        test: /\.jsx?$/,
+        loaders: ['babel-loader'],
+        exclude: /node_modules/
+      },
+      { test: /\.json$/, loaders: ['json-loader'] },
+      { test: /\.node$/, loaders: ['node-loader'] }
+    ]
   },
   sassLoader: {
     includePaths: [
@@ -24,7 +29,7 @@ module.exports = {
   },
   resolve: {
     root: path.resolve(__dirname, 'app'),
-    extensions: ['', '.js', '.jsx', '.scss'],
+    extensions: ['', '.js', '.jsx', '.scss', '.json', '.node'],
     packageMains: ['webpack', 'browser', 'web', 'browserify', ['jam', 'main'], 'main']
   },
   plugins: [

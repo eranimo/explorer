@@ -6,7 +6,7 @@ import HexGridControl from '../components/map/HexGridControl';
 import Header from '../components/nav/Header';
 
 import { loadData } from '../actions/world';
-import { getDayData } from '../actions/time';
+import { fetchNextDay } from '../actions/time';
 
 function mapStateToProps(state) {
   return {
@@ -16,7 +16,7 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ getDayData, loadData }, dispatch);
+  return bindActionCreators({ fetchNextDay, loadData }, dispatch);
 }
 
 class MapPage extends Component {
@@ -24,11 +24,11 @@ class MapPage extends Component {
     world: PropTypes.object.isRequired,
     time: PropTypes.object.isRequired,
     loadData: PropTypes.func.isRequired,
-    getDayData: PropTypes.func.isRequired
+    fetchNextDay: PropTypes.func.isRequired
   };
   componentDidMount() {
     // this.props.loadData();
-    // this.props.getDayData();
+    // this.props.fetchNextDay();
   }
   render() {
     const { details, timeline, geoforms, hexes, enums } = this.props.world;

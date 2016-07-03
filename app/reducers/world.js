@@ -1,26 +1,21 @@
-import { convertToMoment } from 'utils/dates'
-import { LOAD_WORLD_DATA, SELECT_DAY } from '../actions/world'
+import { LOAD_WORLD_DATA, SELECT_DAY, REFRESH_START, REFRESH_END } from '../actions/world'
 
 const INITIAL_STATE = {
   isLoaded: false,
-  timeline: {},
-  data: {},
-  timeRange: {
-    start: convertToMoment('0001-01-01'),
-    end: convertToMoment('0001-01-01')
-  }
+  data: {}
 };
 
 
 export default function world(state = INITIAL_STATE, action) {
   switch (action.type) {
     case LOAD_WORLD_DATA:
-      console.log('%cLoaded world data: %O', 'font-weight: bold; font-size: 16px', action.data);
-      return {
-        ...state,
-        isLoaded: true,
-        ...action.data
-      };
+      console.log('%cLoaded world data: %O', 'font-weight: bold; font-size: 16px', action.payload);
+      return { ...state, isLoaded: true, ...action.payload };
+    case REFRESH_START:
+      return { ...state, isLoaded: false }
+    case REFRESH_END:
+      console.log('%cRefreshing world data: %O', 'font-weight: bold; font-size: 16px', action.payload);
+      return { ...state, isLoaded: true, ...action.payload }
     default:
       return state;
   }

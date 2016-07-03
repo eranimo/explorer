@@ -1,8 +1,8 @@
 import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { loadData } from '../actions/world';
-import { getDayData } from '../actions/time';
+import { loadData, refresh } from '../actions/world';
+import { fetchFirstDay } from '../actions/time';
 
 function mapStateToProps(state) {
   return {
@@ -12,14 +12,14 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ getDayData, loadData }, dispatch);
+  return bindActionCreators({ fetchFirstDay, loadData, refresh }, dispatch);
 }
 
 class App extends Component {
   static propTypes = {
     children: PropTypes.element.isRequired,
     loadData: PropTypes.func.isRequired,
-    getDayData: PropTypes.func.isRequired
+    fetchFirstDay: PropTypes.func.isRequired
   };
 
   static childContextTypes = {
@@ -32,7 +32,14 @@ class App extends Component {
 
   componentDidMount() {
     this.props.loadData();
-    this.props.getDayData();
+    this.props.fetchFirstDay();
+
+    document.onkeydown = (e) => {
+      if (e.key === 'Escape') {
+        console.log('Refresh!');
+        this.props.refresh();
+      }
+    }
   }
 
   render() {

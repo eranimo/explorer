@@ -11,12 +11,28 @@ let menu;
 let template;
 let mainWindow = null;
 
-
-crashReporter.start();
-
 if (process.env.NODE_ENV === 'development') {
-  require('electron-debug')();
+  require('electron-debug')(); // eslint-disable-line global-require
 }
+
+const installExtensions = async () => {
+  if (process.env.NODE_ENV === 'development') {
+    const installer = require('electron-devtools-installer');
+    const extensions = [
+      'REACT_DEVELOPER_TOOLS',
+      'REDUX_DEVTOOLS'
+    ];
+    const forceDownload = !!process.env.UPGRADE_EXTENSIONS;
+    for (const name of extensions) {
+      console.log('Installing extension ' + name)
+      try {
+        await installer.default(installer[name], forceDownload);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  }
+};
 
 
 app.on('window-all-closed', () => {
@@ -24,7 +40,8 @@ app.on('window-all-closed', () => {
 });
 
 
-app.on('ready', () => {
+app.on('ready', async () => {
+  await installExtensions();
   mainWindow = new BrowserWindow({ width: 1024, height: 728 });
 
   if (process.env.HOT) {

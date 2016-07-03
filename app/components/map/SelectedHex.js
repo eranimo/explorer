@@ -42,6 +42,8 @@ import VATTable from './sidebar/vat_table';
 function mapStateToProps(state) {
   return {
     dayData: state.time.dayData,
+    timeline: state.time.timeline,
+    timeRange: state.time.timeRange,
     ...state.world
   };
 }
@@ -51,6 +53,8 @@ class SelectedHex extends Component {
   static propTypes = {
     hex: PropTypes.object,
     dayData: PropTypes.object,
+    timeline: PropTypes.object,
+    timeRange: PropTypes.object,
     geoforms: PropTypes.array,
     deselect: PropTypes.func,
     select: PropTypes.func
@@ -67,7 +71,7 @@ class SelectedHex extends Component {
   getProvinceAtHex() {
     let found;
     _.each(this.props.dayData.Province, (value, key) => {
-      if (value.hex.id === this.props.hex.id) {
+      if (value.hex.x === this.props.hex.x && value.hex.y === this.props.hex.y) {
         found = value;
       }
     });
@@ -113,7 +117,7 @@ class SelectedHex extends Component {
           <dt>Natural Resources</dt>
           <dd>
             {hex.res.length > 0 ?
-              hex.res.map(_.capitalize).join(', ')
+              hex.res.map(i => i.key).map(_.capitalize).join(', ')
             : 'None'}
           </dd>
         </dl>
@@ -406,6 +410,7 @@ class SelectedHex extends Component {
   render() {
     // find occupied provinces
     const province = this.getProvinceAtHex();
+    console.log('province', province)
     if (!province) {
       return (
         <div>

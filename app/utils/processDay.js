@@ -50,26 +50,25 @@ function transformDaysToMoment(dayChanges) {
 
 /* Get the current day data from the timeline
  */
-export default function processDay(timeline, worldData, enums, hexes, currentDay) {
-  const dayString = momentToDateString(convertToMoment(currentDay))
-
-
-  let today = {};
-  _.map(worldData, (v, modelType) => {
-    today[modelType] = timeline[modelType][dayString];
-  });
+export default function processDay(store, enums, hexes) {
+  // const dayString = momentToDateString(convertToMoment(currentDay))
+  // console.log(dayString)
+  // let today = {};
+  // _.map(worldData, (v, modelType) => {
+  //   today[modelType] = timeline[modelType][dayString];
+  // });
 
 
   // instantiate classes
-  const worldInfo = { data: today, enums, hexes }
+  const worldInfo = { data: store, enums, hexes };
+
   _.map(CLASSES, (classConstructor, key) => {
-    today[key] = _.mapValues(today[key], (model, idNum) => {
+    store[key] = _.mapValues(store[key], (model, idNum) => {
       //console.log('process', model)
       model.id = idNum;
       return construct(classConstructor(), key, [model, worldInfo]);
     });
   });
-  console.log(today)
 
-  return today;
+  return store;
 }

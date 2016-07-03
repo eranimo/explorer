@@ -1,20 +1,16 @@
-/* eslint strict: 0 */
-'use strict';
-var webpack = require('webpack')
-const path = require('path');
+import path from 'path';
+import webpack from 'webpack';
 
-module.exports = {
-  target: 'electron-renderer',
+export default {
   module: {
-    loaders: [
-      {
-        test: /\.jsx?$/,
-        loaders: ['babel-loader'],
-        exclude: /node_modules/
-      },
-      { test: /\.json$/, loaders: ['json-loader'] },
-      { test: /\.node$/, loaders: ['node-loader'] }
-    ]
+    loaders: [{
+      test: /\.jsx?$/,
+      loaders: ['babel-loader'],
+      exclude: /node_modules/
+    }, {
+      test: /\.json$/,
+      loader: 'json-loader'
+    }]
   },
   sassLoader: {
     includePaths: [
@@ -29,7 +25,7 @@ module.exports = {
   },
   resolve: {
     root: path.resolve(__dirname, 'app'),
-    extensions: ['', '.js', '.jsx', '.scss', '.json', '.node'],
+    extensions: ['', '.js', '.jsx', '.json', '.scss'],
     packageMains: ['webpack', 'browser', 'web', 'browserify', ['jam', 'main'], 'main']
   },
   plugins: [
@@ -38,6 +34,7 @@ module.exports = {
     })
   ],
   externals: [
-    // put your node 3rd party libraries which can't be built with webpack here (mysql, mongodb, and so on..)
+    // put your node 3rd party libraries which can't be built with webpack here
+    // (mysql, mongodb, and so on..)
   ]
 };

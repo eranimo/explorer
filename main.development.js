@@ -1,38 +1,13 @@
-/* eslint strict: 0 */
-'use strict';
+import { app, BrowserWindow, Menu, shell } from 'electron';
 
-const electron = require('electron');
-const app = electron.app;
-const BrowserWindow = electron.BrowserWindow;
-const Menu = electron.Menu;
-const crashReporter = electron.crashReporter;
-const shell = electron.shell;
 let menu;
 let template;
 let mainWindow = null;
 
+
 if (process.env.NODE_ENV === 'development') {
   require('electron-debug')(); // eslint-disable-line global-require
 }
-
-const installExtensions = async () => {
-  if (process.env.NODE_ENV === 'development') {
-    const installer = require('electron-devtools-installer');
-    const extensions = [
-      'REACT_DEVELOPER_TOOLS',
-      'REDUX_DEVTOOLS'
-    ];
-    const forceDownload = !!process.env.UPGRADE_EXTENSIONS;
-    for (const name of extensions) {
-      console.log('Installing extension ' + name)
-      try {
-        await installer.default(installer[name], forceDownload);
-      } catch (e) {
-        console.error(e);
-      }
-    }
-  }
-};
 
 
 app.on('window-all-closed', () => {
@@ -40,15 +15,37 @@ app.on('window-all-closed', () => {
 });
 
 
+const installExtensions = async () => {
+  if (process.env.NODE_ENV === 'development') {
+    const installer = require('electron-devtools-installer'); // eslint-disable-line global-require
+    const extensions = [
+      'REACT_DEVELOPER_TOOLS',
+      'REDUX_DEVTOOLS'
+    ];
+    const forceDownload = !!process.env.UPGRADE_EXTENSIONS;
+    for (const name of extensions) {
+      try {
+        await installer.default(installer[name], forceDownload);
+      } catch (e) {} // eslint-disable-line
+    }
+  }
+};
+
 app.on('ready', async () => {
   await installExtensions();
-  mainWindow = new BrowserWindow({ width: 1024, height: 728 });
 
-  if (process.env.HOT) {
-    mainWindow.loadURL(`file://${__dirname}/app/hot-dev-app.html`);
-  } else {
-    mainWindow.loadURL(`file://${__dirname}/app/app.html`);
-  }
+  mainWindow = new BrowserWindow({
+    show: false,
+    width: 1024,
+    height: 728
+  });
+
+  mainWindow.loadURL(`file://${__dirname}/app/app.html`);
+
+  mainWindow.webContents.on('did-finish-load', () => {
+    mainWindow.show();
+    mainWindow.focus();
+  });
 
   mainWindow.on('closed', () => {
     mainWindow = null;
@@ -56,13 +53,23 @@ app.on('ready', async () => {
 
   if (process.env.NODE_ENV === 'development') {
     mainWindow.openDevTools();
+    mainWindow.webContents.on('context-menu', (e, props) => {
+      const { x, y } = props;
+
+      Menu.buildFromTemplate([{
+        label: 'Inspect element',
+        click() {
+          mainWindow.inspectElement(x, y);
+        }
+      }]).popup(mainWindow);
+    });
   }
 
   if (process.platform === 'darwin') {
     template = [{
-      label: 'Historia',
+      label: 'Electron',
       submenu: [{
-        label: 'About Historia',
+        label: 'About ElectronReact',
         selector: 'orderFrontStandardAboutPanel:'
       }, {
         type: 'separator'
@@ -72,7 +79,7 @@ app.on('ready', async () => {
       }, {
         type: 'separator'
       }, {
-        label: 'Hide Historia',
+        label: 'Hide ElectronReact',
         accelerator: 'Command+H',
         selector: 'hide:'
       }, {
@@ -85,12 +92,6 @@ app.on('ready', async () => {
       }, {
         type: 'separator'
       }, {
-        label: 'Reload',
-        accelerator: 'Command+R',
-        click() {
-          mainWindow.restart();
-        }
-      }, {
         label: 'Quit',
         accelerator: 'Command+Q',
         click() {
@@ -98,12 +99,41 @@ app.on('ready', async () => {
         }
       }]
     }, {
+      label: 'Edit',
+      submenu: [{
+        label: 'Undo',
+        accelerator: 'Command+Z',
+        selector: 'undo:'
+      }, {
+        label: 'Redo',
+        accelerator: 'Shift+Command+Z',
+        selector: 'redo:'
+      }, {
+        type: 'separator'
+      }, {
+        label: 'Cut',
+        accelerator: 'Command+X',
+        selector: 'cut:'
+      }, {
+        label: 'Copy',
+        accelerator: 'Command+C',
+        selector: 'copy:'
+      }, {
+        label: 'Paste',
+        accelerator: 'Command+V',
+        selector: 'paste:'
+      }, {
+        label: 'Select All',
+        accelerator: 'Command+A',
+        selector: 'selectAll:'
+      }]
+    }, {
       label: 'View',
       submenu: (process.env.NODE_ENV === 'development') ? [{
         label: 'Reload',
         accelerator: 'Command+R',
         click() {
-          mainWindow.restart();
+          mainWindow.webContents.reload();
         }
       }, {
         label: 'Toggle Full Screen',
@@ -131,12 +161,6 @@ app.on('ready', async () => {
         accelerator: 'Command+M',
         selector: 'performMiniaturize:'
       }, {
-        label: 'Reload',
-        accelerator: 'Command+R',
-        click() {
-          mainWindow.restart();
-        }
-      }, {
         label: 'Close',
         accelerator: 'Command+W',
         selector: 'performClose:'
@@ -149,19 +173,24 @@ app.on('ready', async () => {
     }, {
       label: 'Help',
       submenu: [{
-        label: 'Github Repo',
+        label: 'Learn More',
         click() {
-          shell.openExternal('https://github.com/eranimo/historia');
+          shell.openExternal('http://electron.atom.io');
         }
       }, {
         label: 'Documentation',
         click() {
-          shell.openExternal('https://github.com/eranimo/historia/wiki');
+          shell.openExternal('https://github.com/atom/electron/tree/master/docs#readme');
+        }
+      }, {
+        label: 'Community Discussions',
+        click() {
+          shell.openExternal('https://discuss.atom.io/c/electron');
         }
       }, {
         label: 'Search Issues',
         click() {
-          shell.openExternal('https://github.com/eranimo/historia/issues');
+          shell.openExternal('https://github.com/atom/electron/issues');
         }
       }]
     }];
@@ -187,7 +216,7 @@ app.on('ready', async () => {
         label: '&Reload',
         accelerator: 'Ctrl+R',
         click() {
-          mainWindow.restart();
+          mainWindow.webContents.reload();
         }
       }, {
         label: 'Toggle &Full Screen',
@@ -211,19 +240,24 @@ app.on('ready', async () => {
     }, {
       label: 'Help',
       submenu: [{
-        label: 'Github Repo',
+        label: 'Learn More',
         click() {
-          shell.openExternal('https://github.com/eranimo/historia');
+          shell.openExternal('http://electron.atom.io');
         }
       }, {
         label: 'Documentation',
         click() {
-          shell.openExternal('https://github.com/eranimo/historia/wiki');
+          shell.openExternal('https://github.com/atom/electron/tree/master/docs#readme');
+        }
+      }, {
+        label: 'Community Discussions',
+        click() {
+          shell.openExternal('https://discuss.atom.io/c/electron');
         }
       }, {
         label: 'Search Issues',
         click() {
-          shell.openExternal('https://github.com/eranimo/historia/issues');
+          shell.openExternal('https://github.com/atom/electron/issues');
         }
       }]
     }];

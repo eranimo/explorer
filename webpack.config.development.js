@@ -1,65 +1,75 @@
-/* eslint strict: 0 */
-'use strict';
+/* eslint max-len: 0 */
+import webpack from 'webpack';
+import baseConfig from './webpack.config.base';
 
-const webpack = require('webpack');
-const webpackTargetElectronRenderer = require('webpack-target-electron-renderer');
-const baseConfig = require('./webpack.config.base');
+const config = {
+  ...baseConfig,
 
+  debug: true,
 
-const config = Object.create(baseConfig);
+  devtool: 'cheap-module-eval-source-map',
 
-config.debug = true;
+  entry: [
+    'webpack-hot-middleware/client?path=http://localhost:3000/__webpack_hmr',
+    './app/index'
+  ],
 
-config.devtool = 'cheap-module-eval-source-map';
+  output: {
+    ...baseConfig.output,
+    publicPath: 'http://localhost:3000/dist/'
+  },
 
-config.entry = [
-  'webpack-hot-middleware/client?path=http://localhost:3000/__webpack_hmr',
-  'babel-polyfill',
-  './app/index'
-];
+  module: {
+    ...baseConfig.module,
+    loaders: [
+      ...baseConfig.module.loaders,
 
-config.output.publicPath = 'http://localhost:3000/dist/';
+      {
+        test: /\.global\.css$/,
+        loaders: [
+          'style-loader',
+          'css-loader?sourceMap'
+        ]
+      },
 
-config.module.loaders.push({
-  test: /\.module\.css$/,
-  loaders: [
-    'style-loader',
-    'css-loader?sourceMap&modules&importLoaders=1&localIdentName=[name]__[local]___[hash:base64:5]!'
-  ]
-}, {
-  test: /\.module\.scss$/,
-  loaders: [
-    'style-loader',
-    'css-loader?sourceMap&modules&importLoaders=1&localIdentName=[name]__[local]___[hash:base64:5]!',
-    'sass-loader?sourceMap'
-  ]
-}, {
-  test: /^((?!\.module).)*\.css$/,
-  loaders: [
-    'style-loader',
-    'css-loader?sourceMap'
-  ]
-}, {
-  test: /^((?!\.module).)*\.scss$/,
-  loaders: [
-    'style-loader',
-    'css-loader?sourceMap',
-    'sass-loader?sourceMap'
-  ]
-});
+      {
+        test: /^((?!\.global).)*\.css$/,
+        loaders: [
+          'style-loader',
+          'css-loader?modules&sourceMap&importLoaders=1&localIdentName=[name]__[local]___[hash:base64:5]'
+        ]
+      },
 
+      {
+        test: /\.global\.scss$/,
+        loaders: [
+          'style-loader',
+          'css-loader?sourceMap',
+          'sass-loader'
+        ]
+      },
 
-config.plugins.push(
-  new webpack.HotModuleReplacementPlugin(),
-  new webpack.NoErrorsPlugin(),
-  new webpack.DefinePlugin({
-    '__DEV__': true,
-    'process.env': {
-      'NODE_ENV': JSON.stringify('development')
-    }
-  })
-);
+      {
+        test: /^((?!\.global).)*\.scss$/,
+        loaders: [
+          'style-loader',
+          'css-loader?modules&sourceMap&importLoaders=1&localIdentName=[name]__[local]___[hash:base64:5]',
+          'sass-loader'
+        ]
+      }
+    ]
+  },
 
-config.target = webpackTargetElectronRenderer(config);
+  plugins: [
+    ...baseConfig.plugins,
+    new webpack.HotModuleReplacementPlugin(),
+    new webpack.NoErrorsPlugin(),
+    new webpack.DefinePlugin({
+      'process.env.NODE_ENV': JSON.stringify('development')
+    })
+  ],
 
-module.exports = config;
+  target: 'electron-renderer'
+};
+
+export default config;

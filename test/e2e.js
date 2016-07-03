@@ -3,8 +3,8 @@ import chromedriver from 'chromedriver';
 import webdriver from 'selenium-webdriver';
 import { expect } from 'chai';
 import electronPath from 'electron-prebuilt';
-import homeStyles from '../app/components/Home.module.css';
-import counterStyles from '../app/components/Counter.module.css';
+import homeStyles from '../app/components/Home.css';
+import counterStyles from '../app/components/Counter.css';
 
 chromedriver.start(); // on port 9515
 process.on('exit', chromedriver.stop);
@@ -21,7 +21,7 @@ describe('main window', function spec() {
       .withCapabilities({
         chromeOptions: {
           binary: electronPath,
-          args: ['app=' + path.resolve()]
+          args: [`app=${path.resolve()}`]
         }
       })
       .forBrowser('electron')
@@ -32,13 +32,9 @@ describe('main window', function spec() {
     await this.driver.quit();
   });
 
-  const findCounter = () => {
-    return this.driver.findElement(webdriver.By.className(counterStyles.counter));
-  };
+  const findCounter = () => this.driver.findElement(webdriver.By.className(counterStyles.counter));
 
-  const findButtons = () => {
-    return this.driver.findElements(webdriver.By.className(counterStyles.btn));
-  };
+  const findButtons = () => this.driver.findElements(webdriver.By.className(counterStyles.btn));
 
   it('should open window', async () => {
     const title = await this.driver.getTitle();
@@ -101,7 +97,9 @@ describe('main window', function spec() {
   });
 
   it('should back to home if back button clicked', async () => {
-    const link = await this.driver.findElement(webdriver.By.css(`.${counterStyles.backButton} > a`));
+    const link = await this.driver.findElement(
+      webdriver.By.css(`.${counterStyles.backButton} > a`)
+    );
     link.click();
 
     await this.driver.findElement(webdriver.By.className(homeStyles.container));

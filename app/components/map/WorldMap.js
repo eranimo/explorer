@@ -419,6 +419,7 @@ export default class WorldMap {
    * Draws the entire map and minimap
    */
   drawAll() {
+    console.log('redrawing map');
     this.clearMap();
     this.drawMain();
     this.drawMinimap();

@@ -2,7 +2,6 @@ import { convertToMoment, momentToDateString } from './dates';
 
 
 function fetchTimeline (modelType, timeline, currentDay, days=30) {
-  console.log(modelType, timeline, currentDay)
   const firstDay = currentDay.clone().subtract(days, 'days');
   const nextDay = currentDay.clone().add(1, 'days');
   return _(timeline[modelType])
@@ -50,7 +49,6 @@ export function province_economic(province, timeline, currentDay) {
 export function province_cumulative(province, timeline, currentDay, key) {
   let popIds = _.map(province.pops, (p) => p.id);
   let days = fetchTimeline('Pop', timeline, currentDay);
-
   return _(days)
     .map(({ day, data }) => {
       const result = _(data)

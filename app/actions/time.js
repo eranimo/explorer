@@ -40,6 +40,7 @@ export function fetchFirstDay() {
           type: FETCH_NEXT_DAY,
           payload: { data, day, ...world }
         });
+        dispatch({ type: FETCH_FIRST_DAY });
       });
   }
 }

@@ -53,7 +53,7 @@ class SelectedHex extends Component {
   static propTypes = {
     hex: PropTypes.object,
     dayData: PropTypes.object,
-    timeline: PropTypes.object,
+    timeline: PropTypes.array,
     timeRange: PropTypes.object,
     geoforms: PropTypes.array,
     deselect: PropTypes.func,
@@ -61,7 +61,8 @@ class SelectedHex extends Component {
   };
 
   static contextTypes = {
-    currentDay: PropTypes.object
+    currentDay: PropTypes.object,
+    history: PropTypes.object
   };
 
   state = {
@@ -162,14 +163,14 @@ class SelectedHex extends Component {
   }
 
   renderPopulationChart() {
-    const province = this.getProvinceAtHex();
-    let data = province_population(province, this.props.timeline, this.context.currentDay)
+    let popIds = _.map(this.getProvinceAtHex().pops, (p) => p.id);
+    let data = this.context.history.aggregate('Pop', 'population', (rawPop, idNum) => _.includes(popIds, idNum));
     return this.renderLineChart(data, 'population', 'red', (i) => _.round(i).toLocaleString())
   }
 
   renderMoneyChart() {
-    const province = this.getProvinceAtHex();
-    let data = province_money(province, this.props.timeline, this.context.currentDay)
+    let popIds = _.map(this.getProvinceAtHex().pops, (p) => p.id);
+    let data = this.context.history.aggregate('Pop', 'money', (rawPop, idNum) => _.includes(popIds, idNum));
     return this.renderLineChart(data, 'money', '#08CC08', (i) => '$' + _.round(i, 2).toLocaleString())
   }
 
@@ -181,7 +182,11 @@ class SelectedHex extends Component {
 
   renderEconomyChart() {
     const province = this.getProvinceAtHex();
-    let data = province_economic(province, this.props.timeline, this.context.currentDay)
+    let popIds = _.map(province.pops, (p) => p.id);
+    let data = this.context.history.aggregate('Pop', [
+      'successful_trades', 'failed_trades', 'bankrupt_times'
+    ], (rawPop, idNum) => _.includes(popIds, idNum));
+    console.log(data);
     const tickFormatter = (i) => _.round(i).toLocaleString()
     return (
       <div className={styles.Chart}>
@@ -463,7 +468,7 @@ class SelectedHex extends Component {
               <tbody>
                 {_.reverse(_.orderBy(province.owner.provinces, 'population')).map((province) => {
                   return (
-                    <tr>
+                    <tr key={province.name}>
                       <td>
                         <a onClick={() => this.props.select(province.hex.x, province.hex.y)}>
                         {province.name}&nbsp;

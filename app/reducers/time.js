@@ -8,6 +8,7 @@ import {
   PREV_DAY,
   NEXT_DAY,
   FETCH_NEXT_DAY,
+  FETCH_FIRST_DAY,
   GO_TO_DAY,
   SLOWER,
   FASTER,
@@ -62,7 +63,7 @@ export default function time(state = INITIAL_STATE, action) {
         ...state,
         currentDay: wrapDate(state.currentDay).subtract(1, 'day'),
         dayIndex,
-        dayData: state.timeline[dayIndex]
+        dayData: state.timeline[dayIndex].data
       };
 
     case NEXT_DAY:
@@ -71,8 +72,13 @@ export default function time(state = INITIAL_STATE, action) {
         ...state,
         currentDay: wrapDate(state.currentDay).add(1, 'day'),
         dayIndex,
-        dayData: state.timeline[dayIndex]
+        dayData: state.timeline[dayIndex].data
       };
+    case FETCH_FIRST_DAY:
+      return {
+        ...state,
+        dayData: state.timeline[0].data
+      }
     case GO_TO_DAY:
       const newDay = wrapDate(action.payload);
       const dayDiff = state.dayIndex + newDay.diff(state.currentDay, 'day');
@@ -80,7 +86,7 @@ export default function time(state = INITIAL_STATE, action) {
         ...state,
         currentDay: newDay,
         dayIndex: dayDiff,
-        dayData: state.timeline[dayDiff]
+        dayData: state.timeline[dayDiff].data
       };
 
     // time speed controls
@@ -111,7 +117,6 @@ export default function time(state = INITIAL_STATE, action) {
             data: dayData
           }
         ],
-        dayData,
         isLoading: false,
         lastFetchedDay: day
       };

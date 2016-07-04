@@ -41,16 +41,19 @@ class HexGrid extends Component {
   }
 
   componentDidUpdate() {
-    this.worldMap.updateModel(this.getMapDetails());
+    const details = this.getMapDetails();
+    console.log('new data', this.props.dayData)
+    console.log('map details', details);
+    this.worldMap.updateModel(details);
     this.worldMap.setMapView(this.props.mapView);
     this.worldMap.drawAll();
   }
   shouldComponentUpdate (nextProps) {
-    return _.differenceWith(this.props.dayData, nextProps.dayData, _.isEqual);
+    if (Object.keys(nextProps.dayData).length === 0) return false;
+    return !_.isEqual(this.props.dayData, nextProps.dayData);
   }
 
   getMapDetails() {
-    console.log('new data', this.props.dayData)
     const provinces = _.flatten(_.map(this.props.dayData.Country, (c) => c.provinces));
     const countries = _.mapValues(this.props.dayData.Country);
     return { provinces, countries };

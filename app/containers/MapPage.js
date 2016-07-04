@@ -40,7 +40,6 @@ class MapPage extends Component {
           hexes={hexes}
           enums={enums}
           details={details}
-          dayData={dayData}
           geoforms={geoforms}
           timeline={timeline} />
       </div>

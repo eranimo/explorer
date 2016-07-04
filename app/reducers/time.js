@@ -90,22 +90,22 @@ export default function time(state = INITIAL_STATE, action) {
     case FETCH_NEXT_DAY:
       const { data, day, enums, hexes } = action.payload;
 
-      if (state.dayIndex == state.timeline.length + 1) {
-        console.log('Fetching the next day');
-        return {
-          ...state,
-          timeline: [
-            ...state.timeline,
-            {
-              day: day,
-              data: processDay(data, enums, hexes)
-            }
-          ],
-          lastFetchedDay: day
-        };
-      } else if (state.dayIndex > state.timeline.length + 1){
-        throw Error("You can only fetch one day at a time!");
-      }
+      // if (state.dayIndex == state.timeline.length + 1) {
+      console.log('Fetching the next day');
+      return {
+        ...state,
+        timeline: [
+          ...state.timeline,
+          {
+            day: day,
+            data: processDay(data, enums, hexes)
+          }
+        ],
+        lastFetchedDay: day
+      };
+      // } else if (state.dayIndex > state.timeline.length + 1){
+      //   throw Error("You can only fetch one day at a time!");
+      // }
       return state;
 
     default:

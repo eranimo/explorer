@@ -60,15 +60,16 @@ export default function processDay(store, enums, hexes) {
 
 
   // instantiate classes
+  // console.log(store);
   const worldInfo = { data: store, enums, hexes };
 
   _.map(CLASSES, (classConstructor, key) => {
     store[key] = _.mapValues(store[key], (model, idNum) => {
-      //console.log('process', model)
+      // console.log('process', model)
       model.id = idNum;
       return construct(classConstructor(), key, [model, worldInfo]);
     });
   });
-
+  // console.log(store);
   return store;
 }

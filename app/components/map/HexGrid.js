@@ -8,7 +8,8 @@ import WorldMap from './WorldMap';
 
 function mapStateToProps(state) {
   return {
-    dayData: state.time.dayData,
+    ...state.time,
+    timeline: state.time.timeline,
     details: state.world.details,
     hexes: state.world.hexes
   };
@@ -16,23 +17,27 @@ function mapStateToProps(state) {
 
 class HexGrid extends Component {
   static propTypes = {
-    mapView: PropTypes.string,
     hexes: PropTypes.array,
     details: PropTypes.object,
-    dayData: PropTypes.dayData,
+    dayIndex: PropTypes.number,
+    timeline: PropTypes.array,
+
+    mapView: PropTypes.string,
     selectHex: PropTypes.func,
     deselectHex: PropTypes.func,
     getSelectedHex: PropTypes.func
   };
 
   componentDidMount() {
-    const { hexes, mapView, selectHex, deselectHex, getSelectedHex, dayData } = this.props;
+    const { hexes, mapView, selectHex, deselectHex, getSelectedHex, timeline, dayIndex } = this.props;
     const canvases = {
       mainCanvas: this.refs.hexmap,
       politicalMap: this.refs.politicalMap,
       minimapCanvas: this.refs.minimapImage,
       frameCanvas: this.refs.minimapFrame
     };
+    const dayData = timeline[dayIndex];
+    console.log('Day Data', dayData);
     this.worldMap = new WorldMap(hexes, canvases, mapView, dayData, {
       selectHex,
       deselectHex,

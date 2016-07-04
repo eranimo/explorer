@@ -1,8 +1,7 @@
 import { LOAD_WORLD_DATA, SELECT_DAY, REFRESH_START, REFRESH_END } from '../actions/world'
 
 const INITIAL_STATE = {
-  isLoaded: false,
-  data: {}
+  isLoaded: false
 };
 
 

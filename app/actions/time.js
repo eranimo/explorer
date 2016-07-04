@@ -69,6 +69,8 @@ export function nextDay() {
           });
           dispatch({ type: NEXT_DAY });
         });
+    } else {
+      dispatch({ type: NEXT_DAY });
     }
   }
 }

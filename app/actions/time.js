@@ -8,6 +8,7 @@ export const SLOWER = 'SLOWER';
 export const FASTER = 'FASTER';
 export const FETCH_NEXT_DAY = 'FETCH_NEXT_DAY';
 export const GO_TO_DAY = 'GO_TO_DAY';
+export const IS_LOADING = 'IS_LOADING';
 export const FETCH_FIRST_DAY = 'FETCH_FIRST_DAY';
 
 
@@ -60,6 +61,7 @@ export function nextDay() {
   return (dispatch, getState) => {
     const { time: {currentDay, lastFetchedDay} } = getState();
     if (currentDay.isSame(lastFetchedDay, 'day')) {
+      dispatch({ type: IS_LOADING });
       fetchNextDay()
         .then(({ data, day }) => {
           const { world } = getState();

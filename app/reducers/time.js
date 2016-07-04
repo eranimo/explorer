@@ -10,7 +10,8 @@ import {
   FETCH_NEXT_DAY,
   GO_TO_DAY,
   SLOWER,
-  FASTER
+  FASTER,
+  IS_LOADING
 } from '../actions/time';
 
 function wrapDate(date) {
@@ -26,7 +27,9 @@ const INITIAL_STATE = {
   dayIndex: 0, // index of current day in the timeline
   speed: MIN_SPEED, // how fast the simulation is running
   timeline: [], // an array of all days in history
+  dayData: {},
   isPlaying: false, // actively fetching new days in a loop
+  isLoading: true
 };
 window.speed = MIN_SPEED;
 
@@ -54,16 +57,21 @@ export default function time(state = INITIAL_STATE, action) {
       if (state.currentDay === INITIAL_STATE.currentDay) {
         return { ...state };
       }
+      let dayIndex = state.dayIndex - 1;
       return {
         ...state,
         currentDay: wrapDate(state.currentDay).subtract(1, 'day'),
-        dayIndex: state.dayIndex - 1
+        dayIndex,
+        dayData: state.timeline[dayIndex]
       };
+
     case NEXT_DAY:
+      dayIndex = state.dayIndex + 1;
       return {
         ...state,
         currentDay: wrapDate(state.currentDay).add(1, 'day'),
-        dayIndex: state.dayIndex + 1
+        dayIndex,
+        dayData: state.timeline[dayIndex]
       };
     case GO_TO_DAY:
       const newDay = wrapDate(action.payload);
@@ -71,7 +79,8 @@ export default function time(state = INITIAL_STATE, action) {
       return {
         ...state,
         currentDay: newDay,
-        dayIndex: dayDiff
+        dayIndex: dayDiff,
+        dayData: state.timeline[dayDiff]
       };
 
     // time speed controls
@@ -92,21 +101,30 @@ export default function time(state = INITIAL_STATE, action) {
 
       // if (state.dayIndex == state.timeline.length + 1) {
       console.log('Fetching the next day');
+      const dayData = processDay(data, enums, hexes);
       return {
         ...state,
         timeline: [
           ...state.timeline,
           {
-            day: day,
-            data: processDay(data, enums, hexes)
+            day,
+            data: dayData
           }
         ],
+        dayData,
+        isLoading: false,
         lastFetchedDay: day
       };
       // } else if (state.dayIndex > state.timeline.length + 1){
       //   throw Error("You can only fetch one day at a time!");
       // }
       return state;
+
+    case IS_LOADING:
+    return {
+      ...state,
+      isLoading: true
+    }
 
     default:
       return state;

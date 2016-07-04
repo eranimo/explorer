@@ -85,7 +85,6 @@ class SelectedHex extends Component {
     const { hex, geoforms, enums } = this.props;
     let geoform = _.find(geoforms, { id: hex.geoform });
     geoform = geoform && geoform.type || 'None';
-    const biome = enums.Biome[hex.biome.key]
     return (
       <div>
         <h2>Details</h2>
@@ -94,7 +93,7 @@ class SelectedHex extends Component {
           <dd>{hex.x}, {hex.y}</dd>
 
           <dt>Biome</dt>
-          <dd>{biome.title}</dd>
+          <dd>{hex.biome.title}</dd>
 
           <dt>Type</dt>
           <dd>{_.capitalize(hex.type)}</dd>
@@ -114,12 +113,12 @@ class SelectedHex extends Component {
           <dt>Geoform</dt>
           <dd>{_.capitalize(geoform)}</dd>
 
-          <dt>Natural Resources</dt>
+          {/*<dt>Natural Resources</dt>
           <dd>
             {hex.res.length > 0 ?
               hex.res.map(i => i.key).map(_.capitalize).join(', ')
             : 'None'}
-          </dd>
+          </dd>*/}
         </dl>
 
         {/*

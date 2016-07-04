@@ -492,7 +492,6 @@ export default class WorldMap {
           } else {
             color = cell.colors[this.mapView.map];
           }
-          color = color.split(',')
           drawPixel(i, j, color[0], color[1], color[2], 255);
         } else {
           drawPixel(i, j, 0, 0, 0, 255);

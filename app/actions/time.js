@@ -107,13 +107,8 @@ export function play() {
   return (dispatch, getState) => {
     dispatch({ type: PLAY });
     function step() {
-      const { time } = getState();
-      if (time.currentDay.isBefore(time.timeRange.end)) {
-        dispatch(nextDay());
-        window.playInterval = setTimeout(step, SPEED_SECONDS[window.speed]);
-      } else {
-        dispatch(pause());
-      }
+      dispatch(nextDay());
+      window.playInterval = setTimeout(step, SPEED_SECONDS[window.speed]);
     }
     step();
   };

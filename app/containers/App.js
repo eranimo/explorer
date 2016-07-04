@@ -21,6 +21,7 @@ class History {
    * {
    *   day: Moment,
    *   key: Number
+   *   ...
    * }
    * where `key` is the aggregate of the key parameter of all models in the history
    * @param  {type} model       Which model in the history to aggregate over
@@ -54,7 +55,52 @@ class History {
     };
 
     return _(this.history_days)
+      .takeRight(days)
       .map(_.isArray(key) ? mapMultiple : mapSingle)
+      .value();
+  }
+
+
+
+  /**
+   * market - Returns aggregate market prices of all goods
+   * @param  {type} provinceId  Province ID of Market
+   * @param  {type} days        Number of days to look back
+   * @return {type}             Array[Object{day, ...Good.name}]
+   */
+  market(provinceId, days=30) {
+    return _(this.history_days)
+      .takeRight(days)
+      .map(({ day, data }) => {
+        let newData = {}
+        if (data.Province[provinceId]) {
+          data.Province[provinceId].market.history.forEach(({ good, data }) => {
+            newData[good.name] = data.prices[0];
+          });
+          return { day, ...newData };
+        }
+      })
+      .value();
+  }
+
+
+  jobs(provinceId, days=30) {
+    return _(this.history_days)
+      .takeRight(days)
+      .map(({ day, data }) => {
+        // filter pops from other provinces
+        const province = data.Province[provinceId]
+        if (!province) {
+          throw new Error(`Province with ID '${provinceId}' not found`);
+        }
+        const popIds = _.map(province.pops, p => p.id);
+        const jobData = _(data.Pop)
+          .filter((rawPop, idNum) => _.includes(popIds, idNum))
+          .map(rawPop => rawPop.pop_job.name)
+          .countBy()
+          .value();
+        return { day, ...jobData };
+      })
       .value();
   }
 

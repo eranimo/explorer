@@ -161,32 +161,29 @@ class SelectedHex extends Component {
       </div>
     );
   }
+  aggregateFor(key) {
+    let popIds = _.map(this.getProvinceAtHex().pops, (p) => p.id);
+    return this.context.history.aggregate('Pop', key, (rawPop, idNum) => _.includes(popIds, idNum));
+  }
+
 
   renderPopulationChart() {
-    let popIds = _.map(this.getProvinceAtHex().pops, (p) => p.id);
-    let data = this.context.history.aggregate('Pop', 'population', (rawPop, idNum) => _.includes(popIds, idNum));
-    return this.renderLineChart(data, 'population', 'red', (i) => _.round(i).toLocaleString())
+    return this.renderLineChart(this.aggregateFor('population'), 'population', 'red', (i) => _.round(i).toLocaleString())
   }
 
   renderMoneyChart() {
-    let popIds = _.map(this.getProvinceAtHex().pops, (p) => p.id);
-    let data = this.context.history.aggregate('Pop', 'money', (rawPop, idNum) => _.includes(popIds, idNum));
-    return this.renderLineChart(data, 'money', '#08CC08', (i) => '$' + _.round(i, 2).toLocaleString())
+    return this.renderLineChart(this.aggregateFor('money'), 'money', '#08CC08', (i) => '$' + _.round(i, 2).toLocaleString())
   }
 
   renderGoodPriceChart(good) {
     const province = this.getProvinceAtHex();
-    let data = province_market(province, this.props.timeline, this.context.currentDay)
+    let data = this.context.history.market(province.id);
     return this.renderLineChart(data, good.name, good.color, (i) => '$' + i.toLocaleString())
   }
 
   renderEconomyChart() {
     const province = this.getProvinceAtHex();
-    let popIds = _.map(province.pops, (p) => p.id);
-    let data = this.context.history.aggregate('Pop', [
-      'successful_trades', 'failed_trades', 'bankrupt_times'
-    ], (rawPop, idNum) => _.includes(popIds, idNum));
-    console.log(data);
+    let data = this.aggregateFor(['successful_trades', 'failed_trades', 'bankrupt_times']);
     const tickFormatter = (i) => _.round(i).toLocaleString()
     return (
       <div className={styles.Chart}>
@@ -220,9 +217,8 @@ class SelectedHex extends Component {
 
   renderJobChart() {
     const province = this.getProvinceAtHex();
-    let data = province_pop_jobs(province.pops, this.props.timeline, this.context.currentDay)
+    const data = this.context.history.jobs(province.id);
     const tickFormatter = (i) => _.round(i).toLocaleString()
-    console.log('d', data)
     const jobs = this.props.enums.PopJob;
     return (
       <div className={styles.Chart}>

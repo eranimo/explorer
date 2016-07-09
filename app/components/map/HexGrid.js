@@ -49,6 +49,7 @@ class HexGrid extends Component {
     this.worldMap.drawAll();
   }
   shouldComponentUpdate (nextProps) {
+    if (this.props.mapView !== nextProps.mapView) return true;
     if (Object.keys(nextProps.dayData).length === 0) return false;
     return !_.isEqual(this.props.dayData, nextProps.dayData);
   }

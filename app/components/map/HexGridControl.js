@@ -16,7 +16,7 @@ class HexGridControl extends Component {
     hexes: PropTypes.array,
     enums: PropTypes.object,
     dayData: PropTypes.object,
-    timeline: PropTypes.object,
+    timeline: PropTypes.array,
     geoforms: PropTypes.array,
     details: PropTypes.object,
   };

@@ -12,7 +12,8 @@ import {
   GO_TO_DAY,
   SLOWER,
   FASTER,
-  IS_LOADING
+  IS_LOADING,
+  LOAD_HISTORY
 } from '../actions/time';
 
 function wrapDate(date) {
@@ -28,9 +29,10 @@ const INITIAL_STATE = {
   dayIndex: 0, // index of current day in the timeline
   speed: MIN_SPEED, // how fast the simulation is running
   timeline: [], // an array of all days in history
-  dayData: {},
+  dayData: {}, // current timeline day data
   isPlaying: false, // actively fetching new days in a loop
-  isLoading: true
+  isLoading: true,
+  worldData: {} // enums, hexes,
 };
 window.speed = MIN_SPEED;
 
@@ -100,6 +102,29 @@ export default function time(state = INITIAL_STATE, action) {
       window.speed = speed;
       return { ...state, speed };
 
+    case LOAD_HISTORY:
+      const { world_data, days } = action.payload
+      let lastDay;
+      const processedDays = days.map(({ data, day }) => {
+        lastDay = day;
+        return {
+          day: day,
+          data: processDay(data, world_data.enums, world_data.hexes)
+        };
+      });
+      console.log(processedDays)
+      return {
+        ...state,
+        worldData: world_data,
+        isLoading: false,
+        timeline: processedDays,
+        dayIndex: processedDays.length - 1,
+        currentDay: wrapDate(lastDay),
+        dayData: _.last(processedDays).data,
+        lastFetchedDay: lastDay
+      }
+
+
     // get the next day from the server
     // and store it in the timeline
     case FETCH_NEXT_DAY:
@@ -107,7 +132,7 @@ export default function time(state = INITIAL_STATE, action) {
 
       // if (state.dayIndex == state.timeline.length + 1) {
       console.log('Fetching the next day');
-      const dayData = processDay(data, enums, hexes);
+      const dayData = processDay(data, state.worldData.enums, state.worldData.hexes);
       return {
         ...state,
         timeline: [
@@ -126,10 +151,10 @@ export default function time(state = INITIAL_STATE, action) {
       return state;
 
     case IS_LOADING:
-    return {
-      ...state,
-      isLoading: true
-    }
+      return {
+        ...state,
+        isLoading: true
+      }
 
     default:
       return state;

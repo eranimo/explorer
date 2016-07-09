@@ -10,7 +10,7 @@ export const FETCH_NEXT_DAY = 'FETCH_NEXT_DAY';
 export const GO_TO_DAY = 'GO_TO_DAY';
 export const IS_LOADING = 'IS_LOADING';
 export const FETCH_FIRST_DAY = 'FETCH_FIRST_DAY';
-
+export const LOAD_HISTORY = 'LOAD_HISTORY';
 
 // how fast each time setting is
 const SPEED_SECONDS = {
@@ -31,16 +31,13 @@ export function fetchNextDay() {
 
 // ACTIONS
 
-export function fetchFirstDay() {
+export function loadHistory() {
   return (dispatch, getState) => {
-    fetchNextDay()
-      .then(({ data, day }) => {
-        const { world } = getState();
-        dispatch({
-          type: FETCH_NEXT_DAY,
-          payload: { data, day, ...world }
-        });
-        dispatch({ type: FETCH_FIRST_DAY });
+    fetch('http://localhost:5000/start')
+      .then(res => res.json())
+      .then(data => {
+        console.log('world data', data);
+        dispatch({ type: LOAD_HISTORY, payload: data });
       });
   }
 }
@@ -65,10 +62,9 @@ export function nextDay() {
       dispatch({ type: IS_LOADING });
       fetchNextDay()
         .then(({ data, day }) => {
-          const { world } = getState();
           dispatch({
             type: FETCH_NEXT_DAY,
-            payload: { data, day, ...world }
+            payload: { data, day }
           });
           dispatch({ type: NEXT_DAY });
         });

@@ -3,7 +3,6 @@ import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import WorldStats from '../components/statistics/WorldStats';
 import Header from '../components/nav/Header';
-import * as WorldActions from '../actions/world';
 
 function mapStateToProps(state) {
   return {
@@ -18,8 +17,7 @@ function mapDispatchToProps(dispatch) {
 
 class StatsPage extends Component {
   static propTypes = {
-    world: PropTypes.object.isRequired,
-    loadData: PropTypes.func.isRequired
+    time: PropTypes.object.isRequired,
   };
   componentDidMount() {
     //this.props.loadData();
@@ -34,7 +32,7 @@ class StatsPage extends Component {
     return (
       <div>
         <Header />
-        <WorldStats world={this.props.world} />
+        {/*<WorldStats world={this.props.world} />*/}
       </div>
     );
   }

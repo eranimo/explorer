@@ -9,6 +9,7 @@ export default function world(state = INITIAL_STATE, action) {
   switch (action.type) {
     case LOAD_WORLD_DATA:
       console.log('%cLoaded world data: %O', 'font-weight: bold; font-size: 16px', action.payload);
+      if (action.payload.)
       return { ...state, isLoaded: true, ...action.payload };
     case REFRESH_START:
       return { ...state, isLoaded: false }

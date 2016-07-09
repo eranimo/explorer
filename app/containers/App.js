@@ -1,8 +1,7 @@
 import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { loadData, refresh } from '../actions/world';
-import { fetchFirstDay } from '../actions/time';
+import { loadHistory } from '../actions/time';
 import { convertToMoment, momentToDateString } from '../utils/dates';
 
 class History {
@@ -110,22 +109,19 @@ class History {
 
 function mapStateToProps(state) {
   return {
-    world: state.world,
     time: state.time,
-    dayData: state.time.dayData
   };
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ fetchFirstDay, loadData, refresh }, dispatch);
+  return bindActionCreators({ loadHistory }, dispatch);
 }
 
 class App extends Component {
   static propTypes = {
     children: PropTypes.element.isRequired,
-    dayData: PropTypes.object.isRequired,
-    loadData: PropTypes.func.isRequired,
-    fetchFirstDay: PropTypes.func.isRequired
+    time: PropTypes.object.isRequired,
+    loadHistory: PropTypes.func.isRequired
   };
 
   static childContextTypes = {
@@ -134,10 +130,10 @@ class App extends Component {
     history: PropTypes.object
   };
 
-  shouldComponentUpdate (nextProps) {
-    if (Object.keys(nextProps.dayData).length === 0) return false;
-    return !_.isEqual(this.props.dayData, nextProps.dayData);
-  }
+  // shouldComponentUpdate (nextProps) {
+  //   if (Object.keys(nextProps.time.dayData).length === 0) return false;
+  //   return !_.isEqual(this.props.time.dayData, nextProps.time.dayData);
+  // }
 
   getChildContext() {
     console.log('context has been updated!', this.props.time);
@@ -150,15 +146,7 @@ class App extends Component {
   }
 
   componentDidMount() {
-    this.props.loadData();
-    this.props.fetchFirstDay();
-
-    document.onkeydown = (e) => {
-      if (e.key === 'Escape') {
-        console.log('Refresh!');
-        this.props.refresh();
-      }
-    }
+    this.props.loadHistory();
   }
 
   render() {

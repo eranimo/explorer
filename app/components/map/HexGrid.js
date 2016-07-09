@@ -9,8 +9,8 @@ import WorldMap from './WorldMap';
 function mapStateToProps(state) {
   return {
     ...state.time,
-    details: state.world.details,
-    hexes: state.world.hexes
+    details: state.time.worldData.details,
+    hexes: state.time.worldData.hexes
   };
 }
 

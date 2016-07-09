@@ -5,46 +5,31 @@ import { connect } from 'react-redux';
 import HexGridControl from '../components/map/HexGridControl';
 import Header from '../components/nav/Header';
 
-import { loadData } from '../actions/world';
-import { fetchNextDay } from '../actions/time';
 
 function mapStateToProps(state) {
   return {
-    world: state.world,
     time: state.time
   };
 }
 
-function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ fetchNextDay, loadData }, dispatch);
-}
-
 class MapPage extends Component {
   static propTypes = {
-    world: PropTypes.object.isRequired,
-    time: PropTypes.object.isRequired,
-    loadData: PropTypes.func.isRequired,
-    fetchNextDay: PropTypes.func.isRequired
+    time: PropTypes.object.isRequired
   };
-  componentDidMount() {
-    // this.props.loadData();
-    // this.props.fetchNextDay();
-  }
   render() {
-    const { details, timeline, geoforms, hexes, enums } = this.props.world;
-    const { dayData } = this.props.time;
+    const { worldData, timeline, dayData } = this.props.time;
     return (
       <div>
         <Header />
         <HexGridControl
-          hexes={hexes}
-          enums={enums}
-          details={details}
-          geoforms={geoforms}
+          hexes={worldData.hexes}
+          enums={worldData.enums}
+          details={worldData.details}
+          geoforms={[]}
           timeline={timeline} />
       </div>
     );
   }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(MapPage);
+export default connect(mapStateToProps)(MapPage);

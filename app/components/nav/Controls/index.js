@@ -10,14 +10,13 @@ import * as TimeActions from '../../../actions/time';
 
 import 'react-datepicker/dist/react-datepicker.css';
 
-function mapStateToProps({ time, world }) {
+function mapStateToProps({ time }) {
   return {
     currentDay: time.currentDay,
     speed: time.speed,
     isPlaying: time.isPlaying,
     timeline: time.timeline,
-    dayIndex: time.dayIndex,
-    isLoaded: world.isLoaded
+    dayIndex: time.dayIndex
   };
 }
 
@@ -50,7 +49,6 @@ class Controls extends Component {
   render() {
     const divider = <div className={styles.divider}></div>;
     const currentDay = this.props.currentDay;
-    if (!this.props.isLoaded) return null;
     return (
       <div className={styles.controls}>
         {!this.props.isPlaying ?

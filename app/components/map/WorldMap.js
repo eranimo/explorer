@@ -1,6 +1,7 @@
 import _ from 'lodash';
 import jQuery from 'jquery';
 import * as MAPVIEWS from './map_views.const';
+import { darken, hexToRgb } from 'utils/canvas';
 
 const settings = {
   border_color_width: 3,
@@ -15,17 +16,6 @@ const color = {
   rivers: '21, 52, 60'
 };
 
-function darken(_color, percent) {
-  let color = _color.split(',');
-  _.map(color, (c) => parseInt(c, 10));
-  color[0] = color[0] - (color[0] * (percent/100));
-  color[1] = color[1] - (color[1] * (percent/100));
-  color[2] = color[2] - (color[2] * (percent/100));
-  var r = Math.round(Math.max(Math.min(color[0], 255), 0));
-  var g = Math.round(Math.max(Math.min(color[1], 255), 0));
-  var b = Math.round(Math.max(Math.min(color[2], 255), 0));
-  return r + ',' + g + ',' + b;
-}
 
 const HEX_SIDES = {
   'north_east': { fromPoint: 'north', toPoint: 'north_east' },
@@ -485,17 +475,15 @@ export default class WorldMap {
       for (let j = 0; j < this.size; j++) {
         let cell = this.grid[j][i];
         if (cell) {
+          const foundProvince = this.findProvince(cell);
           let color;
-          if (this.mapView.colors) {
-            // if (cell.province_color) {
-            //   color = cell.province_color.split(',');
-            // } else {
-            color = cell.colors[this.mapView.map];
-            // }
+          if (foundProvince) {
+            color = hexToRgb(foundProvince.owner.display.map_color);
+            drawPixel(i, j, color.r, color.g, color.b, 255);
           } else {
             color = cell.colors[this.mapView.map];
+            drawPixel(i, j, color[0], color[1], color[2], 255);
           }
-          drawPixel(i, j, color[0], color[1], color[2], 255);
         } else {
           drawPixel(i, j, 0, 0, 0, 255);
         }

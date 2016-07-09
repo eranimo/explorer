@@ -200,6 +200,7 @@ export default class WorldMap {
           if (hexPos.y >= 0 && hexPos.y < this.BOARDHEIGHT) {
             var hex = this.grid[hexPos.y][hexPos.x];
             this.hover_hex = hex;
+            this.hover_coordinates = coord;
           }
         }
 
@@ -423,6 +424,7 @@ export default class WorldMap {
     this.clearMap();
     this.drawMain();
     this.drawMinimap();
+    this.canvas.context.translate(0.5, 0.5);
   }
 
   /**
@@ -662,6 +664,7 @@ export default class WorldMap {
     ctx.font = '20pt Arial';
     ctx.textAlign = 'center';
 
+    // draw countries
     _.mapValues(this.mapDetails.countries, (country) => {
       country.groups.forEach(({ x_coord, y_coord }) => {
         let { x, y } = this.hexToCoordinate(x_coord, y_coord);
@@ -675,6 +678,35 @@ export default class WorldMap {
         ctx.fillText(country.name, x - 1, y - 1);
       });
     });
+
+
+    // draw tooltip
+    if (this.hover_hex) {
+      const foundProvince = this.findProvince(this.hover_hex);
+      if (foundProvince) {
+        let { x, y } = this.hexToCoordinate(this.hover_hex.x, this.hover_hex.y);
+
+        x = Math.round(this.r(Math.round(this.mapState.loc.x + x)));
+        y = Math.round(this.r(Math.round(this.mapState.loc.y + y)));
+
+        const ctx = this.canvas.context;
+        const textSize = ctx.measureText(foundProvince.name);
+
+        ctx.beginPath();
+        ctx.fillStyle = 'rgb(25, 46, 54)';
+        ctx.strokeStyle = '#333333';
+        ctx.lineWidth = 1;
+        ctx.rect(x, y, Math.round(textSize.width - textSize.width * 0.35), 20);
+        ctx.fill();
+        ctx.stroke();
+        ctx.closePath();
+
+        ctx.font = '14px Arial';
+        ctx.fillStyle = '#C0C0C0';
+        ctx.textAlign = 'start';
+        ctx.fillText(foundProvince.name, x + 5, y + 15);
+      }
+    }
 
   }
 

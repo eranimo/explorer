@@ -11,6 +11,7 @@ import {
   province_pop_jobs,
   province_market
 } from 'utils/pop_helper';
+import History from 'utils/history';
 import { convertToMoment } from 'utils/dates';
 import {
   LineChart,
@@ -44,7 +45,9 @@ function mapStateToProps(state) {
     dayData: state.time.dayData,
     timeline: state.time.timeline,
     timeRange: state.time.timeRange,
-    ...state.world
+    dayIndex: state.time.dayIndex,
+    geoforms: [],
+    ...state.time.worldData
   };
 }
 
@@ -60,14 +63,15 @@ class SelectedHex extends Component {
     select: PropTypes.func
   };
 
-  static contextTypes = {
-    currentDay: PropTypes.object,
-    history: PropTypes.object
-  };
-
   state = {
     detailsOpen: false
   };
+
+  constructor(props) {
+    super(props);
+    const { dayIndex, timeline } = props;
+    this.history = new History(dayIndex, timeline);
+  }
 
   getProvinceAtHex() {
     let found;
@@ -163,7 +167,7 @@ class SelectedHex extends Component {
   }
   aggregateFor(key) {
     let popIds = _.map(this.getProvinceAtHex().pops, (p) => p.id);
-    return this.context.history.aggregate('Pop', key, (rawPop, idNum) => _.includes(popIds, idNum));
+    return this.history.aggregate('Pop', key, (rawPop, idNum) => _.includes(popIds, idNum));
   }
 
 
@@ -177,7 +181,7 @@ class SelectedHex extends Component {
 
   renderGoodPriceChart(good) {
     const province = this.getProvinceAtHex();
-    let data = this.context.history.market(province.id);
+    let data = this.history.market(province.id);
     return this.renderLineChart(data, good.name, good.color, (i) => '$' + i.toLocaleString())
   }
 
@@ -217,7 +221,7 @@ class SelectedHex extends Component {
 
   renderJobChart() {
     const province = this.getProvinceAtHex();
-    const data = this.context.history.jobs(province.id);
+    const data = this.history.jobs(province.id);
     const tickFormatter = (i) => _.round(i).toLocaleString()
     const jobs = this.props.enums.PopJob;
     return (

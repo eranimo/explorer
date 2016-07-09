@@ -112,7 +112,6 @@ export default function time(state = INITIAL_STATE, action) {
           data: processDay(data, world_data.enums, world_data.hexes)
         };
       });
-      console.log(processedDays)
       return {
         ...state,
         worldData: world_data,
@@ -129,8 +128,6 @@ export default function time(state = INITIAL_STATE, action) {
     // and store it in the timeline
     case FETCH_NEXT_DAY:
       const { data, day, enums, hexes } = action.payload;
-
-      // if (state.dayIndex == state.timeline.length + 1) {
       console.log('Fetching the next day');
       const dayData = processDay(data, state.worldData.enums, state.worldData.hexes);
       return {
@@ -145,9 +142,6 @@ export default function time(state = INITIAL_STATE, action) {
         isLoading: false,
         lastFetchedDay: day
       };
-      // } else if (state.dayIndex > state.timeline.length + 1){
-      //   throw Error("You can only fetch one day at a time!");
-      // }
       return state;
 
     case IS_LOADING:

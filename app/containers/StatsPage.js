@@ -6,21 +6,18 @@ import Header from '../components/nav/Header';
 
 function mapStateToProps(state) {
   return {
-    world: state.world
+    hexes: state.time.worldData.hexes,
+    geoforms: state.time.worldData.geoforms
   };
-}
-
-function mapDispatchToProps(dispatch) {
-  return bindActionCreators(WorldActions, dispatch);
 }
 
 
 class StatsPage extends Component {
   static propTypes = {
-    time: PropTypes.object.isRequired,
+    hexes: PropTypes.array,
+    geoforms: PropTypes.array
   };
   componentDidMount() {
-    //this.props.loadData();
     document.body.style.overflowY = 'auto';
   }
 
@@ -29,13 +26,14 @@ class StatsPage extends Component {
   }
 
   render() {
+    if (!this.props.hexes) return <div>Loading...</div>;
     return (
       <div>
         <Header />
-        {/*<WorldStats world={this.props.world} />*/}
+        <WorldStats hexes={this.props.hexes} geoforms={this.props.geoforms} />
       </div>
     );
   }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(StatsPage);
+export default connect(mapStateToProps)(StatsPage);

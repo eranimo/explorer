@@ -6,13 +6,14 @@ import { Treemap } from 'react-d3';
 
 export default class Statistics extends Component {
   static propTypes = {
-    world: PropTypes.object
+    hexes: PropTypes.array,
+    geoforms: PropTypes.array
   };
 
   biomeData() {
     let biomes = {};
     let total = 0;
-    this.props.world.hexes.forEach((row) => {
+    this.props.hexes.forEach((row) => {
       row.forEach((hex) => {
         if (_.isNumber(biomes[hex.biome.title])) {
           biomes[hex.biome.title] += 1;
@@ -33,7 +34,7 @@ export default class Statistics extends Component {
   geoformData(){
     let geoforms = {};
     let total = 0;
-    this.props.world.geoforms.forEach((geoform) => {
+    this.props.geoforms.forEach((geoform) => {
       if (_.isNumber(geoforms[geoform.type])) {
         geoforms[geoform.type] += geoform.size;
         total += geoform.size;
@@ -50,7 +51,7 @@ export default class Statistics extends Component {
   }
 
   render() {
-    console.log(this.props.world);
+    console.log(this.props);
     return (
       <div>
         <div className={styles.Statistics}>

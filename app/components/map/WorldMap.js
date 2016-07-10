@@ -16,7 +16,6 @@ const color = {
   rivers: '21, 52, 60'
 };
 
-console.log(1)
 // const HEX_SIDES = {
 //   north_east: { fromPoint: 'north', toPoint: 'north_east' },
 //   east: { fromPoint: 'north_east', toPoint: 'south_east' },

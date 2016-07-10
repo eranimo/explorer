@@ -1,6 +1,5 @@
 import React, { Component, PropTypes } from 'react';
 import moment from 'moment';
-import _ from 'lodash';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 
@@ -8,7 +7,6 @@ import styles from './style.module.css';
 import DatePicker from 'react-datepicker';
 import * as TimeActions from '../../../actions/time';
 
-import 'react-datepicker/dist/react-datepicker.css';
 
 function mapStateToProps({ time }) {
   return {

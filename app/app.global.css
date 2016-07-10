@@ -1,3 +1,6 @@
+@import "../node_modules/react-datepicker/dist/react-datepicker.css";
+
+
 * {
   box-sizing: border-box;
 }

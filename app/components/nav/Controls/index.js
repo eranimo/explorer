@@ -14,7 +14,8 @@ function mapStateToProps({ time }) {
     speed: time.speed,
     isPlaying: time.isPlaying,
     timeline: time.timeline,
-    dayIndex: time.dayIndex
+    dayIndex: time.dayIndex,
+    lastFetchedDay: time.lastFetchedDay
   };
 }
 

@@ -80,10 +80,12 @@ export default function time(state = INITIAL_STATE, action) {
       return {
         ...state,
         dayData: state.timeline[0].data
-      }
+      };
+
     case GO_TO_DAY:
       const newDay = wrapDate(action.payload);
       const dayDiff = state.dayIndex + newDay.diff(state.currentDay, 'day');
+      console.log(dayDiff);
       return {
         ...state,
         currentDay: newDay,
@@ -120,7 +122,7 @@ export default function time(state = INITIAL_STATE, action) {
         dayIndex: processedDays.length - 1,
         currentDay: wrapDate(lastDay),
         dayData: _.last(processedDays).data,
-        lastFetchedDay: lastDay
+        lastFetchedDay: wrapDate(lastDay)
       }
 
 

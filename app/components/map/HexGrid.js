@@ -28,9 +28,13 @@ class HexGrid extends Component {
   componentDidMount() {
     this.setupWorldMap(this.props);
   }
-  componentDidUpdate(nextProps) {
-    this.worldMap.destroy();
-    this.setupWorldMap(nextProps);
+  componentDidUpdate() {
+    const details = this.getMapDetails();
+    console.log('new data', this.props.dayData);
+    console.log('map details', details);
+    this.worldMap.updateModel(details);
+    this.worldMap.setMapView(this.props.mapView);
+    this.worldMap.drawAll();
   }
 
   setupWorldMap(props) {

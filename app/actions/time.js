@@ -79,8 +79,9 @@ export function nextDay() {
 export function goToDay(day) {
   return (dispatch, getState) => {
     const { time: { currentDay, lastFetchedDay } } = getState();
-    if (currentDay.isBefore(lastFetchedDay, 'day')) {
-      return { type: GO_TO_DAY, payload: day };
+    console.log(day, currentDay, lastFetchedDay);
+    if (day.isSame(lastFetchedDay, 'day') || day.isBefore(lastFetchedDay, 'day')) {
+      dispatch({ type: GO_TO_DAY, payload: day });
     } else {
       console.log("Can't jump into the future");
     }
@@ -96,7 +97,7 @@ export function faster() {
 }
 
 export function goToFirstDay() {
-  return goToDay(moment('0001-01-01'));
+  return goToDay(moment('0001-01-01', 'YYYY-MM-DD'));
 }
 
 export function play() {

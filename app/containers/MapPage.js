@@ -1,6 +1,5 @@
 import React, { Component, PropTypes } from 'react';
 
-import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import HexGridControl from '../components/map/HexGridControl';
 import Header from '../components/nav/Header';
@@ -17,7 +16,7 @@ class MapPage extends Component {
     time: PropTypes.object.isRequired
   };
   render() {
-    const { worldData, timeline, dayData } = this.props.time;
+    const { worldData, timeline } = this.props.time;
     return (
       <div>
         <Header />
@@ -26,7 +25,8 @@ class MapPage extends Component {
           enums={worldData.enums}
           details={worldData.details}
           geoforms={[]}
-          timeline={timeline} />
+          timeline={timeline}
+        />
       </div>
     );
   }

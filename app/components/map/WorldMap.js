@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import jQuery from 'jquery';
 import * as MAPVIEWS from './map_views.const';
-import { darken, hexToRgb, midPoint, drawStar } from 'utils/canvas';
+import { hexToRgb, midPoint, drawStar } from 'utils/canvas'; // eslint-disable-line
 
 const settings = {
   border_color_width: 3,
@@ -16,15 +16,15 @@ const color = {
   rivers: '21, 52, 60'
 };
 
-
-const HEX_SIDES = {
-  'north_east': { fromPoint: 'north', toPoint: 'north_east' },
-  'east': { fromPoint: 'north_east', toPoint: 'south_east' },
-  'south_east': { fromPoint: 'south_east', toPoint: 'south' },
-  'south_west': { fromPoint: 'south', toPoint: 'south_west' },
-  'west': { fromPoint: 'south_west', toPoint: 'north_west' },
-  'north_west': { fromPoint: 'north_west', toPoint: 'north' },
-}
+console.log(1)
+// const HEX_SIDES = {
+//   north_east: { fromPoint: 'north', toPoint: 'north_east' },
+//   east: { fromPoint: 'north_east', toPoint: 'south_east' },
+//   south_east: { fromPoint: 'south_east', toPoint: 'south' },
+//   south_west: { fromPoint: 'south', toPoint: 'south_west' },
+//   west: { fromPoint: 'south_west', toPoint: 'north_west' },
+//   north_west: { fromPoint: 'north_west', toPoint: 'north' },
+// };
 
 export default class WorldMap {
 
@@ -43,8 +43,8 @@ export default class WorldMap {
     panning: false
   };
 
-  _province_cache = {};
-  _hex_points = {};
+  provinceCache = {};
+  hexPointsCache = {};
 
   constructor(hexes, canvases, mapView, currentDay, functions, mapDetails) {
     this.size = hexes.length;
@@ -106,9 +106,8 @@ export default class WorldMap {
       south_west: [],
       west: [],
       north_west: []
-    }
+    };
     this.country_borders = _.cloneDeep(this.no_borders);
-
 
 
     // compute some hex constants
@@ -178,8 +177,8 @@ export default class WorldMap {
         this.mapState.cursorX = e.offsetX;
         this.mapState.cursorY = e.offsetY;
 
-        var coord = this.screenToCoordinate(e.offsetX, e.offsetY);
-        var hexPos = this.coordinateToHex(coord.x, coord.y);
+        const coord = this.screenToCoordinate(e.offsetX, e.offsetY);
+        const hexPos = this.coordinateToHex(coord.x, coord.y);
 
         this.mapState.selecting = true;
         this.clearMap();
@@ -188,7 +187,7 @@ export default class WorldMap {
         // Check if the mouse's coords are on the board
         if (hexPos !== null && hexPos.x >= 0 && hexPos.x < this.BOARDWIDTH) {
           if (hexPos.y >= 0 && hexPos.y < this.BOARDHEIGHT) {
-            var hex = this.grid[hexPos.y][hexPos.x];
+            const hex = this.grid[hexPos.y][hexPos.x];
             this.hover_hex = hex;
             this.hover_coordinates = coord;
           }
@@ -202,7 +201,7 @@ export default class WorldMap {
         this.drawMinimapFrame();
       },
       mousewheel: (e) => {
-        var delta = e.originalEvent.wheelDelta;
+        const delta = e.originalEvent.wheelDelta;
         if (delta < 0) {
           // up
           this.zoom('up', e);
@@ -250,7 +249,7 @@ export default class WorldMap {
         e.preventDefault();
       }
     });
-    jQuery(window).on({
+    window.canvasEventHandler = jQuery(window).on({
       keyup: (e) => {
         const code = e.keyCode;
         let delta = 40;
@@ -267,8 +266,6 @@ export default class WorldMap {
           this.move(-delta, 0);
         } else if (code === 32) {
           this.zoom();
-        } else if (code === 67) {
-          console.log(this.getCenter());
         }
       },
       resize: () => {
@@ -276,6 +273,20 @@ export default class WorldMap {
       }
     });
     this.resize();
+  }
+
+
+  /**
+   * destroy - Destroys World
+   *
+   * @return {type}  description
+   */
+  destroy() {
+    this.canvas.elem.off();
+    this.politicalMap.elem.off();
+    this.minimapCanvas.elem.off();
+    this.frameCanvas.elem.off();
+    window.canvasEventHandler.off();
   }
 
   setMapView(mapView) {
@@ -286,12 +297,12 @@ export default class WorldMap {
    * Gets the coordinates of the top left and bottom right visible hex
    * @return {Object{x1, y1, x2, y2}}   Coordinates Object
    */
-  getVisibleHexes() {
+  getVisibleArea() {
     const topLeft = this.screenToCoordinate(0, 0);
     const bottomRight = this.screenToCoordinate(this.getWidth(), this.getHeight());
-    var one = this.coordinateToHex(topLeft.x, topLeft.y, true);
-    var two = this.coordinateToHex(bottomRight.x, bottomRight.y, true);
-    var offset = Math.round(7 / this.mapState.z);
+    const one = this.coordinateToHex(topLeft.x, topLeft.y, true);
+    const two = this.coordinateToHex(bottomRight.x, bottomRight.y, true);
+    const offset = Math.round(7 / this.mapState.z);
     return {
       x1: Math.max(Math.min(one.x - offset, this.size), 0),
       y1: Math.max(Math.min(one.y - offset, this.size), 0),
@@ -311,15 +322,6 @@ export default class WorldMap {
       x: (-(this.mapState.loc.x) + (offsetX) * this.mapState.z),
       y: (-(this.mapState.loc.y) + (offsetY) * this.mapState.z)
     };
-  }
-
-  pointInTriangle(p, p0, p1, p2) {
-    var A = 1 / 2 * (-p1.y * p2.x + p0.y * (-p1.x + p2.x) + p0.x * (p1.y - p2.y) + p1.x * p2.y);
-    var sign = A < 0 ? -1 : 1;
-    var s = (p0.y * p2.x - p0.x * p2.y + (p2.y - p0.y) * p.x + (p0.x - p2.x) * p.y) * sign;
-    var t = (p0.x * p1.y - p0.y * p1.x + (p0.y - p1.y) * p.x + (p1.x - p0.x) * p.y) * sign;
-
-    return s > 0 && t > 0 && (s + t) < 2 * A * sign;
   }
 
   /**
@@ -344,10 +346,10 @@ export default class WorldMap {
     let ArrayY = ySection;
 
     if (ySection % 2 === 0) {
-      if (ySectionPixel < (h - xSectionPixel * m)) {// left Edge
+      if (ySectionPixel < (h - xSectionPixel * m)) { // left Edge
         ArrayY = ySection - 1;
         ArrayX = xSection - 1;
-      } else if (ySectionPixel < (-h + xSectionPixel * m)) {// right Edge
+      } else if (ySectionPixel < (-h + xSectionPixel * m)) { // right Edge
         ArrayY = ySection - 1;
         ArrayX = xSection;
       }
@@ -397,8 +399,7 @@ export default class WorldMap {
   }
 
   resize() {
-    var canvas = this.canvas.elem;
-    canvas
+    this.canvas.elem
       .attr({
         width: jQuery(window).width(),
         height: jQuery(window).height()
@@ -427,12 +428,11 @@ export default class WorldMap {
   }
 
   drawMinimap() {
-    let canvas = this.minimapCanvas.elem[0];
+    const canvas = this.minimapCanvas.elem[0];
     canvas.width = 200;
     canvas.height = 200;
-    let mctx = this.minimapCanvas.context;
+    const mctx = this.minimapCanvas.context;
     mctx.mozImageSmoothingEnabled = false;
-    mctx.webkitImageSmoothingEnabled = false;
     mctx.msImageSmoothingEnabled = false;
     mctx.imageSmoothingEnabled = false;
     const size = this.size;
@@ -453,14 +453,14 @@ export default class WorldMap {
     canvas.width = oldWidth * ratio;
     canvas.height = oldHeight * ratio;
 
-    canvas.style.width = oldWidth + 'px';
-    canvas.style.height = oldHeight + 'px';
+    canvas.style.width = `${oldWidth}px`;
+    canvas.style.height = `${oldHeight}px`;
     mctx.scale(ratio, ratio);
 
-    var canvasData = mctx.getImageData(0, 0, size, size);
+    const canvasData = mctx.getImageData(0, 0, size, size);
 
     function drawPixel(x, y, r, g, b, a) {
-      var index = (x + y * size) * 4;
+      const index = (x + y * size) * 4;
 
       canvasData.data[index + 0] = r;
       canvasData.data[index + 1] = g;
@@ -473,16 +473,16 @@ export default class WorldMap {
     }
     for (let i = 0; i < this.size; i++) {
       for (let j = 0; j < this.size; j++) {
-        let cell = this.grid[j][i];
+        const cell = this.grid[j][i];
         if (cell) {
           const foundProvince = this.findProvince(cell);
-          let color;
+          let pcolor;
           if (foundProvince) {
-            color = hexToRgb(foundProvince.owner.display.map_color);
-            drawPixel(i, j, color.r, color.g, color.b, 255);
+            pcolor = hexToRgb(foundProvince.owner.display.map_color);
+            drawPixel(i, j, pcolor.r, pcolor.g, pcolor.b, 255);
           } else {
-            color = cell.colors[this.mapView.map];
-            drawPixel(i, j, color[0], color[1], color[2], 255);
+            pcolor = cell.colors[this.mapView.map];
+            drawPixel(i, j, pcolor[0], pcolor[1], pcolor[2], 255);
           }
         } else {
           drawPixel(i, j, 0, 0, 0, 255);
@@ -518,12 +518,13 @@ export default class WorldMap {
    * Draws the main world map
    */
   drawMain() {
-    var ctx = this.canvas.context;
+    const ctx = this.canvas.context;
     ctx.fillStyle = '#000';
     ctx.strokeStyle = '#000';
     ctx.lineWidth = 10;
     ctx.strokeWidth = 10;
-    var visible = this.getVisibleHexes();
+
+    const visible = this.getVisibleArea();
     for (let i = visible.x1; i < visible.x2; ++i) {
       for (let j = visible.y1; j < visible.y2; ++j) {
         this.drawHexagon(
@@ -677,7 +678,6 @@ export default class WorldMap {
         x = Math.round(this.r(Math.round(this.mapState.loc.x + x)));
         y = Math.round(this.r(Math.round(this.mapState.loc.y + y)));
 
-        const ctx = this.canvas.context;
         const textSize = ctx.measureText(foundProvince.name);
 
         ctx.beginPath();
@@ -695,7 +695,6 @@ export default class WorldMap {
         ctx.fillText(foundProvince.name, x + 5, y + 15);
       }
     }
-
   }
 
   decideBorderWidth(province, side, ctx) {
@@ -725,43 +724,43 @@ export default class WorldMap {
   }
 
   getHexSidePoints(x, y) {
-    const cacheKey = x + '-' + y;
-    if (this._hex_points[cacheKey]) {
-      return this._hex_points[cacheKey];
-    } else {
-      const origin = [this.r(x + this.HEXRADIUS), this.r(y)];
-      const pointer_1 = [
-        Math.floor(this.r(x) + this.r(this.HEXRECTWIDTH)),
-        Math.floor(this.r(y + this.HEXHEIGHT))
-      ];
-      const pointer_2 = [
-        Math.floor(this.r(x) + this.r(this.HEXRECTWIDTH)),
-        Math.floor(this.r(y + this.HEXHEIGHT + this.SIDELENGTH))
-      ];
-      const pointer_3 = [
-        Math.floor(this.r(x) + this.r(this.HEXRADIUS)),
-        Math.floor(this.r(y + this.HEXRECTHEIGHT))
-      ];
-      const pointer_4 = [
-        Math.floor(this.r(x)),
-        Math.floor(this.r(y + this.SIDELENGTH + this.HEXHEIGHT))
-      ];
-      const pointer_5 = [
-        Math.floor(this.r(x)),
-        Math.floor(this.r(y + this.HEXHEIGHT))
-      ];
-
-      const points = {
-        north: origin,
-        north_east: pointer_1,
-        south_east: pointer_2,
-        south: pointer_3,
-        south_west: pointer_4,
-        north_west: pointer_5
-      };
-      this._hex_points[cacheKey] = points;
-      return points;
+    const cacheKey = `${x}-${y}`;
+    if (this.hexPointsCache[cacheKey]) {
+      return this.hexPointsCache[cacheKey];
     }
+
+    const origin = [this.r(x + this.HEXRADIUS), this.r(y)];
+    const pointer1 = [
+      Math.floor(this.r(x) + this.r(this.HEXRECTWIDTH)),
+      Math.floor(this.r(y + this.HEXHEIGHT))
+    ];
+    const pointer2 = [
+      Math.floor(this.r(x) + this.r(this.HEXRECTWIDTH)),
+      Math.floor(this.r(y + this.HEXHEIGHT + this.SIDELENGTH))
+    ];
+    const pointer3 = [
+      Math.floor(this.r(x) + this.r(this.HEXRADIUS)),
+      Math.floor(this.r(y + this.HEXRECTHEIGHT))
+    ];
+    const pointer4 = [
+      Math.floor(this.r(x)),
+      Math.floor(this.r(y + this.SIDELENGTH + this.HEXHEIGHT))
+    ];
+    const pointer5 = [
+      Math.floor(this.r(x)),
+      Math.floor(this.r(y + this.HEXHEIGHT))
+    ];
+
+    const points = {
+      north: origin,
+      north_east: pointer1,
+      south_east: pointer2,
+      south: pointer3,
+      south_west: pointer4,
+      north_west: pointer5
+    };
+    this.hexPointsCache[cacheKey] = points;
+    return points;
   }
 
   drawProvinceBorders(originX, originY, cx, cy) {
@@ -773,7 +772,7 @@ export default class WorldMap {
       north, north_east, south_east, south, south_west, north_west
     } = this.getHexSidePoints(x, y);
 
-    let hex = this.grid[cy][cx];
+    const hex = this.grid[cy][cx];
 
     const foundProvince = this.findProvince(hex);
     if (foundProvince) {
@@ -832,23 +831,22 @@ export default class WorldMap {
 
   updateModel(mapDetails) {
     this.mapDetails = mapDetails;
-    this._province_cache = [];
+    this.provinceCache = [];
   }
 
   findProvince(hex) {
-    const hexString = `${hex.x},${hex.y}`
-    if (this._province_cache[hexString]) {
-      return this._province_cache[hexString];
-    } else {
-      let foundProvince;
-      _.each(this.mapDetails.provinces, (province) => {
-        if (province.hex.x === hex.x && province.hex.y === hex.y) {
-          foundProvince = province;
-        }
-      });
-      this._province_cache[hexString] = foundProvince;
-      return foundProvince;
+    const hexString = `${hex.x},${hex.y}`;
+    if (this.provinceCache[hexString]) {
+      return this.provinceCache[hexString];
     }
+    let foundProvince;
+    _.each(this.mapDetails.provinces, (province) => {
+      if (province.hex.x === hex.x && province.hex.y === hex.y) {
+        foundProvince = province;
+      }
+    });
+    this.provinceCache[hexString] = foundProvince;
+    return foundProvince;
   }
 
   getHexMidpoint(x, y) {
@@ -864,9 +862,13 @@ export default class WorldMap {
    * @param  {Number} cy      hex col
    */
   drawHexagon(originX, originY, cx, cy) {
-    var ctx = this.canvas.context;
+    const ctx = this.canvas.context;
     const x = this.mapState.loc.x + originX;
     const y = this.mapState.loc.y + originY;
+
+    if (x < -this.HEXRECTWIDTH || y < -this.HEXRECTHEIGHT) {
+      return;
+    }
 
     ctx.lineWidth = 0.3;
     ctx.beginPath();
@@ -883,18 +885,19 @@ export default class WorldMap {
     ctx.lineTo(north_west[0], north_west[1]);
     ctx.closePath();
 
-    var hex = this.grid[cy][cx];
-    let color;
+    const hex = this.grid[cy][cx];
+
+    let hexColor;
     if (hex) {
-      color = hex.colors[this.mapView.map];
+      hexColor = hex.colors[this.mapView.map];
     } else {
-      color = '0,0,0';
+      hexColor = '0,0,0';
     }
     const foundProvince = this.findProvince(hex);
     if (foundProvince) {
       ctx.fillStyle = foundProvince.owner.display.map_color;
     } else {
-      ctx.fillStyle = 'rgb(' + color + ')';
+      ctx.fillStyle = `rgb(${hexColor})`;
     }
 
     ctx.fill();
@@ -937,7 +940,7 @@ export default class WorldMap {
       north, north_east, south_east, south, south_west, north_west
     } = this.getHexSidePoints(x, y);
 
-    var hex = this.grid[cy][cx];
+    const hex = this.grid[cy][cx];
     if (hex !== null) {
       // var width = settings.border_color_width;
 
@@ -951,7 +954,7 @@ export default class WorldMap {
         ctx.lineTo(north_east[0], north_east[1]);
       } else if (hex.edges.north_east.is_river && view.rivers) {
         ctx.lineWidth = 3;
-        ctx.strokeStyle = "rgb(" + color.rivers +')';
+        ctx.strokeStyle = `rgb(${color.rivers})`;
         ctx.moveTo(north[0], north[1]);
         ctx.lineTo(north_east[0], north_east[1]);
       }
@@ -964,7 +967,7 @@ export default class WorldMap {
         ctx.lineTo(south_east[0], south_east[1]);
       } else if (hex.edges.east.is_river && view.rivers) {
         ctx.lineWidth = 3;
-        ctx.strokeStyle = "rgb(" + color.rivers +')';
+        ctx.strokeStyle = `rgb(${color.rivers})`;
         ctx.moveTo(north_east[0], north_east[1]);
         ctx.lineTo(south_east[0], south_east[1]);
       }
@@ -977,7 +980,7 @@ export default class WorldMap {
         ctx.lineTo(south[0], south[1]);
       } else if (hex.edges.south_east.is_river && view.rivers) {
         ctx.lineWidth = 3;
-        ctx.strokeStyle = "rgb(" + color.rivers +')';
+        ctx.strokeStyle = `rgb(${color.rivers})`;
         ctx.moveTo(south_east[0], south_east[1]);
         ctx.lineTo(south[0], south[1]);
       }
@@ -990,7 +993,7 @@ export default class WorldMap {
         ctx.lineTo(south_west[0], south_west[1]);
       } else if (hex.edges.south_west.is_river && view.rivers) {
         ctx.lineWidth = 3;
-        ctx.strokeStyle = "rgb(" + color.rivers +')';
+        ctx.strokeStyle = `rgb(${color.rivers})`;
         ctx.moveTo(south[0], south[1]);
         ctx.lineTo(south_west[0], south_west[1]);
       }
@@ -1003,7 +1006,7 @@ export default class WorldMap {
         ctx.lineTo(north_west[0], north_west[1]);
       } else if (hex.edges.west.is_river && view.rivers) {
         ctx.lineWidth = 3;
-        ctx.strokeStyle = "rgb(" + color.rivers +')';
+        ctx.strokeStyle = `rgb(${color.rivers})`;
         ctx.moveTo(south_west[0], south_west[1]);
         ctx.lineTo(north_west[0], north_west[1]);
       }
@@ -1016,7 +1019,7 @@ export default class WorldMap {
         ctx.lineTo(north[0], north[1]);
       } else if (hex.edges.north_west.is_river && view.rivers) {
         ctx.lineWidth = 3;
-        ctx.strokeStyle = "rgb(" + color.rivers +')';
+        ctx.strokeStyle = `rgb(${color.rivers})`;
         ctx.moveTo(north_west[0], north_west[1]);
         ctx.lineTo(north[0], north[1]);
       }
@@ -1043,8 +1046,8 @@ export default class WorldMap {
 
   hexToCoordinate(x, y) {
     return {
-      x:  y * this.HEXRECTWIDTH + ((x % 2) * this.HEXRADIUS),
-      y:  x * (this.SIDELENGTH + this.HEXHEIGHT)
+      x: y * this.HEXRECTWIDTH + ((x % 2) * this.HEXRADIUS),
+      y: x * (this.SIDELENGTH + this.HEXHEIGHT)
     };
   }
 
@@ -1061,9 +1064,9 @@ export default class WorldMap {
 
   selectProvince(province, travel) {
     if (province === null) { // deselect
-      //this.selected_province = null;
+      // this.selected_province = null;
     } else {
-      //this.selected_province = province;
+      // this.selected_province = province;
       if (travel) {
         const group = _.sortBy(province.groups, 'size').reverse()[0];
         const coord = this.hexToCoordinate(group.x, group.y);
@@ -1117,9 +1120,7 @@ export default class WorldMap {
     if (oldzoom !== this.mapState.z) {
       this.clearMap();
       this.drawMain();
-      var m_x = (x * this.mapState.z - x * oldzoom) / 1,
-        m_y = (y * this.mapState.z - y * oldzoom) / 1;
-      this.move(m_x, m_y);
+      this.move(x * this.mapState.z - x * oldzoom, y * this.mapState.z - y * oldzoom);
     }
   }
 
@@ -1137,16 +1138,14 @@ export default class WorldMap {
   }
 
   travel(x2, y2, zoomTo = 1, callback) {
-    var self = this,
-      x = this.getCenter().x,
-      y = this.getCenter().y,
-      zoom = this.mapState.z;
-    jQuery({ x: x, y: y, z: zoom }).animate({ x: x2, y: y2, z: zoomTo }, {
+    jQuery({
+      ...this.getCenter(), z: this.mapState.z
+    }).animate({ x: x2, y: y2, z: zoomTo }, {
       duration: 600,
       easing: 'swing',
-      step() {
-        self.zoom(this.z);
-        self.jump(this.x, this.y);
+      step: () => {
+        this.zoom(this.z);
+        this.jump(this.x, this.y);
       },
       done() {
         if (_.isDefined(callback)) {

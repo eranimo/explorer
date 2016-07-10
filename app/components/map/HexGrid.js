@@ -26,7 +26,15 @@ class HexGrid extends Component {
   };
 
   componentDidMount() {
-    const { hexes, mapView, selectHex, deselectHex, getSelectedHex, dayData } = this.props;
+    this.setupWorldMap(this.props);
+  }
+  componentDidUpdate(nextProps) {
+    this.worldMap.destroy();
+    this.setupWorldMap(nextProps);
+  }
+
+  setupWorldMap(props) {
+    const { hexes, mapView, selectHex, deselectHex, getSelectedHex, dayData } = props;
     const canvases = {
       mainCanvas: this.refs.hexmap,
       politicalMap: this.refs.politicalMap,
@@ -39,16 +47,7 @@ class HexGrid extends Component {
       getSelectedHex
     }, this.getMapDetails());
   }
-
-  componentDidUpdate() {
-    const details = this.getMapDetails();
-    console.log('new data', this.props.dayData)
-    console.log('map details', details);
-    this.worldMap.updateModel(details);
-    this.worldMap.setMapView(this.props.mapView);
-    this.worldMap.drawAll();
-  }
-  shouldComponentUpdate (nextProps) {
+  shouldComponentUpdate(nextProps) {
     if (this.props.mapView !== nextProps.mapView) return true;
     if (Object.keys(nextProps.dayData).length === 0) return false;
     return !_.isEqual(this.props.dayData, nextProps.dayData);
@@ -66,8 +65,8 @@ class HexGrid extends Component {
         <canvas ref="hexmap" className={styles.hexmap}></canvas>
         <canvas ref="politicalMap" className={styles.politicalMap}></canvas>
         <div id="minimap" className={styles.minimap}>
-            <canvas ref="minimapImage" className={styles.minimapPart} width="200" height="200"></canvas>
-            <canvas ref="minimapFrame" className={styles.minimapPart} width="200" height="200"></canvas>
+          <canvas ref="minimapImage" className={styles.minimapPart} width="200" height="200"></canvas>
+          <canvas ref="minimapFrame" className={styles.minimapPart} width="200" height="200"></canvas>
         </div>
       </div>
     );

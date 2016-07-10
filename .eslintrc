@@ -12,13 +12,28 @@
     "no-use-before-define": 0,
     "import/no-unresolved": [2, { ignore: ['electron'] }],
     "react/jsx-no-bind": 0,
-    "react/prefer-stateless-function": 0
+    "react/prefer-stateless-function": 0,
+    "max-len": [1, 120],
+    "no-param-reassign": 0,
+    "no-console": 0,
+    "react/sort-comp": 0,
+    "arrow-body-style": 0
   },
   "plugins": [
     "import",
     "react"
   ],
   "settings": {
-    "import/resolver": "webpack"
+    "import/ignore": {
+
+    },
+    "import/resolver": {
+      "webpack": {
+        "config": "webpack.config.base.js"
+      }
+    }
+  },
+  "globals": {
+    "_": true
   }
 }

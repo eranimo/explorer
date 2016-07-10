@@ -8,7 +8,7 @@ import SelectedHex from './SelectedHex';
 
 
 const Divider = function Divider() {
-  return <div className={styles.divider}></div>
+  return <div className={styles.divider}></div>;
 };
 
 class HexGridControl extends Component {
@@ -39,15 +39,15 @@ class HexGridControl extends Component {
     });
   }
 
-  selectHexByCoordinate(x, y){
-    console.log('Select', this.props.hexes[x][y])
+  selectHexByCoordinate(x, y) {
+    console.log('Select', this.props.hexes[x][y]);
     this.setState({
       selectedHex: this.props.hexes[x][y]
-    })
+    });
   }
 
   deselectHex() {
-    console.log('Deselect hex')
+    console.log('Deselect hex');
     this.setState({
       selectedHex: null
     });
@@ -58,10 +58,10 @@ class HexGridControl extends Component {
   }
 
   render() {
-    const { hexes, details, geoforms, dayData, timeline, enums } = this.props;
+    const { hexes } = this.props;
     if (hexes) {
       const mapViews = _.toArray(MAPVIEWS).map((v) => {
-        return (<option key={v.name} value={v.map}>{v.title}</option>);
+        return <option key={v.name} value={v.map}>{v.title}</option>;
       });
       let selectedHex = null;
       if (this.state.selectedHex) {

@@ -14,8 +14,8 @@ export default {
   },
   sassLoader: {
     includePaths: [
-      path.resolve(__dirname, "./app"),
-      path.resolve(__dirname, "./node_modules")
+      path.resolve(__dirname, './app'),
+      path.resolve(__dirname, './node_modules')
     ]
   },
   output: {

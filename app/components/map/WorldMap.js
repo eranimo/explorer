@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import jQuery from 'jquery';
 import * as MAPVIEWS from './map_views.const';
-import { darken, hexToRgb } from 'utils/canvas';
+import { darken, hexToRgb, midPoint, drawStar } from 'utils/canvas';
 
 const settings = {
   border_color_width: 3,
@@ -851,6 +851,10 @@ export default class WorldMap {
     }
   }
 
+  getHexMidpoint(x, y) {
+    return midPoint(_.values(this.getHexSidePoints(x, y)));
+  }
+
   /**
    * Draws a specific hexagon on the world map
    * @param  {Number} x       X coordinate of hex origin
@@ -904,6 +908,11 @@ export default class WorldMap {
     } else if (selectedHex && selectedHex.x === hex.x && selectedHex.y === hex.y) {
       ctx.fillStyle = 'rgba(110, 110, 110, 0.4)';
       ctx.fill();
+    }
+
+    if (foundProvince && foundProvince.is_capital) {
+      const hexMidpoint = this.getHexMidpoint(x, y);
+      drawStar(ctx, hexMidpoint[0], hexMidpoint[1], foundProvince.owner.display.border_color, this.r(15), this.r(6));
     }
   }
 

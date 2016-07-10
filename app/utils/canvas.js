@@ -10,35 +10,43 @@ export function darken(_color, percent) {
   return `${r},${g},${b}`;
 }
 
+export function midPoint(coords) {
+  let tx = 0;
+  let ty = 0;
+  coords.forEach(coord => {
+    tx += coord[0];
+    ty += coord[1];
+  })
+  return [
+    Math.round(tx / coords.length),
+    Math.round(ty / coords.length)
+  ]
+}
 
-export function drawStar(cx, cy, spikes, outerRadius, innerRadius, fillColor, strokeColor) {
+
+export function drawStar(ctx, cx, cy, color='black', outerRadius=15, innerRadius=6, spikes=5) {
   let rot = Math.PI / 2 * 3;
   let x = cx;
   let y = cy;
   let step = Math.PI / spikes;
 
-  ctx.strokeSyle = "#000";
   ctx.beginPath();
   ctx.moveTo(cx, cy - outerRadius)
   for (let i = 0; i < spikes; i++) {
     x = cx + Math.cos(rot) * outerRadius;
     y = cy + Math.sin(rot) * outerRadius;
-    ctx.lineTo(x, y)
-    rot += step
+    ctx.lineTo(x, y);
+    rot += step;
 
     x = cx + Math.cos(rot) * innerRadius;
     y = cy + Math.sin(rot) * innerRadius;
-    ctx.lineTo(x, y)
-    rot += step
+    ctx.lineTo(x, y);
+    rot += step;
   }
-  ctx.lineTo(cx, cy - outerRadius)
+  ctx.lineTo(cx, cy - outerRadius);
   ctx.closePath();
-  ctx.lineWidth=5;
-  ctx.strokeStyle = strokeColor;
-  ctx.stroke();
-  ctx.fillStyle = fillColor;
+  ctx.fillStyle = color;
   ctx.fill();
-
 }
 
 

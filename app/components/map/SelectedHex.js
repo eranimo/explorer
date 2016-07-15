@@ -30,9 +30,9 @@ import ReactTooltip from 'react-tooltip';
 
 import {
   PopulationChartTooltip,
-  EconomicChartTooltip,
+  AggregateTooltip,
   JobChartTooltip
-} from './sidebar/tooltips'
+} from './sidebar/tooltips';
 import PopTable from './sidebar/pop_table';
 import PopInventory from './sidebar/pop_inventory';
 import MerchantTable from './sidebar/merchant_table';
@@ -42,12 +42,9 @@ import VATTable from './sidebar/vat_table';
 
 function mapStateToProps(state) {
   return {
-    dayData: state.time.dayData,
-    timeline: state.time.timeline,
-    timeRange: state.time.timeRange,
-    dayIndex: state.time.dayIndex,
-    geoforms: [],
-    ...state.time.worldData
+    ...state.time,
+    ...state.time.worldData,
+    geoforms: []
   };
 }
 
@@ -60,17 +57,34 @@ class SelectedHex extends Component {
     timeRange: PropTypes.object,
     geoforms: PropTypes.array,
     deselect: PropTypes.func,
-    select: PropTypes.func
+    select: PropTypes.func,
+    dayIndex: PropTypes.number
   };
 
   state = {
     detailsOpen: false
   };
 
-  constructor(props) {
-    super(props);
-    const { dayIndex, timeline } = props;
+  // constructor(props) {
+  //   super(props);
+  //   const { dayIndex, timeline } = props;
+  //   this.history = new History(dayIndex, timeline);
+  // }
+
+  componentWillMount() {
+    const { dayIndex, timeline } = this.props;
     this.history = new History(dayIndex, timeline);
+  }
+
+  shouldComponentUpdate(nextProps, nextState) {
+    return this.props.dayIndex !== nextProps.dayIndex ||
+      this.state.detailsOpen !== nextState.detailsOpen ||
+      this.props.hex !== nextProps.hex;
+  }
+
+  componentWillUpdate(nextProps) {
+    console.log(nextProps.dayIndex);
+    this.history = new History(nextProps.dayIndex, nextProps.timeline);
   }
 
   getProvinceAtHex() {
@@ -118,7 +132,7 @@ class SelectedHex extends Component {
           <dt>Geoform</dt>
           <dd>{_.capitalize(geoform)}</dd>
 
-          {/*<dt>Natural Resources</dt>
+          {/* <dt>Natural Resources</dt>
           <dd>
             {hex.res.length > 0 ?
               hex.res.map(i => i.key).map(_.capitalize).join(', ')
@@ -149,18 +163,20 @@ class SelectedHex extends Component {
     return (
       <div className={styles.Chart}>
         <LineChart width={300} height={250} data={data}
-          margin={{ top: 30, right: 5, left: 10, bottom: 0 }}>
+          margin={{ top: 30, right: 5, left: 10, bottom: 0 }}
+        >
           <XAxis dataKey="day" tickFormatter={(i) => convertToMoment(i).format('l')} />
           <YAxis tickFormatter={tickFormatter} />
           <CartesianGrid strokeDasharray="3 3" />
-          <Tooltip content={<PopulationChartTooltip tickFormatter={tickFormatter} />}/>
+          <Tooltip content={<PopulationChartTooltip tickFormatter={tickFormatter} />} />
           <ReferenceLine x={province.date_founded} stroke="black" label="Date Founded" />
           <Legend />
           <Line type="linear"
             dataKey={key}
             stroke={color}
             dot={false}
-            isAnimationActive={false} />
+            isAnimationActive={false}
+          />
         </LineChart>
       </div>
     );
@@ -170,50 +186,89 @@ class SelectedHex extends Component {
     return this.history.aggregate('Pop', key, (rawPop, idNum) => _.includes(popIds, idNum));
   }
 
+  renderCountryChart(key, formatFunc, lineColor) {
+    const province = this.getProvinceAtHex();
+    const data = this.history.aggregate('Country', key, (rawCountry, idNum) => rawCountry.id === province.owner.id);
+    return this.renderLineChart(data, key, lineColor, formatFunc);
+  }
 
   renderPopulationChart() {
-    return this.renderLineChart(this.aggregateFor('population'), 'population', 'red', (i) => _.round(i).toLocaleString())
+    return this.renderLineChart(this.aggregateFor('population'), 'population', 'red', (i) => _.round(i).toLocaleString());
   }
 
   renderMoneyChart() {
-    return this.renderLineChart(this.aggregateFor('money'), 'money', '#08CC08', (i) => '$' + _.round(i, 2).toLocaleString())
+    return this.renderLineChart(this.aggregateFor('money'), 'money', '#08CC08', (i) => '$' + _.round(i, 2).toLocaleString());
   }
 
   renderGoodPriceChart(good) {
     const province = this.getProvinceAtHex();
     let data = this.history.market(province.id);
-    return this.renderLineChart(data, good.name, good.color, (i) => '$' + i.toLocaleString())
+    return this.renderLineChart(data, good.name, good.color, (i) => '$' + i.toLocaleString());
   }
 
   renderEconomyChart() {
     const province = this.getProvinceAtHex();
-    let data = this.aggregateFor(['successful_trades', 'failed_trades', 'bankrupt_times']);
-    const tickFormatter = (i) => _.round(i).toLocaleString()
+    let chart1Data = this.aggregateFor(['successful_trades', 'failed_trades']);
+    const Chart1Tooltip = AggregateTooltip([ // eslint-disable-line
+      { key: 'successful_trades', color: '#08CC08' },
+      { key: 'failed_trades', color: 'red' },
+    ]);
+
+    let chart2Data = this.aggregateFor(['bankrupt_times']);
+    const Chart2Tooltip = AggregateTooltip([ // eslint-disable-line
+      { key: 'bankrupt_times', color: 'lightblue' }
+    ]);
+    const tickFormatter = (i) => _.round(i).toLocaleString();
     return (
       <div className={styles.Chart}>
-        <LineChart width={300} height={250} data={data}
-          margin={{ top: 30, right: 5, left: 10, bottom: 0 }}>
+        <LineChart
+          width={300}
+          height={250}
+          data={chart1Data}
+          margin={{ top: 30, right: 5, left: 10, bottom: 0 }}
+        >
           <XAxis dataKey="day" tickFormatter={(i) => convertToMoment(i).format('l')} />
           <YAxis tickFormatter={tickFormatter} />
           <CartesianGrid strokeDasharray="3 3" />
-          <Tooltip content={<EconomicChartTooltip tickFormatter={tickFormatter} />}/>
+          <Tooltip
+            content={React.createElement(Chart1Tooltip, { tickFormatter })}
+          />
           <ReferenceLine x={province.date_founded} stroke="black" label="Date Founded" />
           <Legend />
-          <Line type="linear"
+          <Line
+            type="linear"
             dataKey="successful_trades"
             stroke="#08CC08"
             dot={false}
-            isAnimationActive={false} />
-          <Line type="linear"
+            isAnimationActive={false}
+          />
+          <Line
+            type="linear"
             dataKey="failed_trades"
             stroke="red"
             dot={false}
-            isAnimationActive={false} />
-          <Line type="linear"
+            isAnimationActive={false}
+          />
+        </LineChart>
+        <LineChart
+          width={300}
+          height={250}
+          data={chart2Data}
+          margin={{ top: 30, right: 5, left: 10, bottom: 0 }}
+        >
+          <XAxis dataKey="day" tickFormatter={(i) => convertToMoment(i).format('l')} />
+          <YAxis tickFormatter={tickFormatter} />
+          <CartesianGrid strokeDasharray="3 3" />
+          <Tooltip content={React.createElement(Chart2Tooltip, { tickFormatter })} />
+          <ReferenceLine x={province.date_founded} stroke="black" label="Date Founded" />
+          <Legend />
+          <Line
+            type="linear"
             dataKey="bankrupt_times"
             stroke="lightblue"
             dot={false}
-            isAnimationActive={false} />
+            isAnimationActive={false}
+          />
         </LineChart>
       </div>
     );
@@ -222,16 +277,17 @@ class SelectedHex extends Component {
   renderJobChart() {
     const province = this.getProvinceAtHex();
     const data = this.history.jobs(province.id);
-    const tickFormatter = (i) => _.round(i).toLocaleString()
+    const tickFormatter = (i) => _.round(i).toLocaleString();
     const jobs = this.props.enums.PopJob;
     return (
       <div className={styles.Chart}>
         <AreaChart width={300} height={250} data={data}
-          margin={{ top: 30, right: 5, left: 10, bottom: 0 }}>
+          margin={{ top: 30, right: 5, left: 10, bottom: 0 }}
+        >
           <XAxis dataKey="day" tickFormatter={(i) => convertToMoment(i).format('l')} />
           <YAxis />
           <CartesianGrid strokeDasharray="3 3" />
-          <Tooltip content={<JobChartTooltip jobs={jobs} />}/>
+          <Tooltip content={<JobChartTooltip jobs={jobs} />} />
           <ReferenceLine x={province.date_founded} stroke="black" label="Date Founded" />
           <Legend />
           {_.map(jobs, (popType) => {
@@ -243,8 +299,9 @@ class SelectedHex extends Component {
                 stroke={popType.color}
                 fill={popType.color}
                 dot={false}
-                isAnimationActive={false} />
-            )
+                isAnimationActive={false}
+              />
+            );
           })}
         </AreaChart>
       </div>
@@ -255,12 +312,12 @@ class SelectedHex extends Component {
     const province = this.getProvinceAtHex();
     const total_population = _.sum(_.map(province.pops, 'population'));
     const total_savings = _.sum(_.map(province.pops, 'money'));
-    const cumulate = (key) => _.sum(_.map(province.pops, key))
+    const cumulate = (key) => _.sum(_.map(province.pops, key));
 
     const success = cumulate('successful_trades');
     const fail = cumulate('failed_trades');
     const total = success + fail;
-    const ratio = (success / total) * 100
+    const ratio = (success / total) * 100;
 
     if (province) {
       return (
@@ -278,7 +335,7 @@ class SelectedHex extends Component {
             <dt>Number of Pops</dt>
             <dd>{province.pops.length.toLocaleString()}</dd>
             <dt>Total Savings</dt>
-            <dd>{'$'+_.round(total_savings).toLocaleString()}</dd>
+            <dd>{'$' + _.round(total_savings).toLocaleString()}</dd>
             <dt>Number of Bankruptcies</dt>
             <dd>{cumulate('bankrupt_times').toLocaleString()}</dd>
             <dt>Number of Successful Trades</dt>
@@ -300,10 +357,10 @@ class SelectedHex extends Component {
 
           <hr />
           <h2>Economic Health</h2>
-          <small style={{color: 'gray'}}>Cumulative over time</small>
+          <small style={{ color: 'gray' }}>Cumulative over time</small>
           {this.renderEconomyChart()}
         </div>
-      )
+      );
     }
     return null;
   }
@@ -324,7 +381,7 @@ class SelectedHex extends Component {
     }
   }
 
-  renderTitle () {
+  renderTitle() {
     let title;
     const province = this.getProvinceAtHex();
     if (!province) {
@@ -335,7 +392,7 @@ class SelectedHex extends Component {
         <span>
           <span data-tip="Province Name">{province.name}</span>
           &nbsp;
-          <small data-tip="Country" style={{color: 'gray'}}>{province.owner.name}</small>
+          <small data-tip="Country" style={{ color: 'gray' }}>{province.owner.name}</small>
         </span>
       );
     }
@@ -347,15 +404,15 @@ class SelectedHex extends Component {
           <i className="fa fa-times" onClick={this.props.deselect}></i>
         </button>
       </div>
-    )
+    );
   }
 
   closeDetails() {
-    this.setState({ detailsOpen: false })
+    this.setState({ detailsOpen: false });
   }
 
   openDetails() {
-    this.setState({ detailsOpen: true })
+    this.setState({ detailsOpen: true });
   }
 
   renderDetails() {
@@ -381,7 +438,8 @@ class SelectedHex extends Component {
             <h2>Good Prices</h2>
             <MarketTable
               enums={this.props.enums}
-              province={province} />
+              province={province}
+            />
 
             <dl>
               <dt>Most Demanded Good</dt>
@@ -414,7 +472,7 @@ class SelectedHex extends Component {
   render() {
     // find occupied provinces
     const province = this.getProvinceAtHex();
-    console.log('province', province)
+    console.log('selected hex rerender');
     if (!province) {
       return (
         <div>
@@ -426,7 +484,7 @@ class SelectedHex extends Component {
             <TabPanel>{this.renderHexTab()}</TabPanel>
           </Tabs>
         </div>
-      )
+      );
     }
 
     return (
@@ -452,8 +510,10 @@ class SelectedHex extends Component {
               <dt>Name</dt><dd>{province.owner.name}</dd>
               <dt># of Provinces</dt><dd>{province.owner.provinces.length}</dd>
               <dt>Total Population</dt><dd>{province.owner.total_population.toLocaleString()}</dd>
+              {this.renderCountryChart('total_population', (i) => _.round(i).toLocaleString(), '#08CC08')}
               <dt>Cash Reserves</dt>
               <dd>{formatCurrency(province.owner.money)}</dd>
+              {this.renderCountryChart('money', (i) => '$' + _.round(i).toLocaleString(), '#08CC08')}
             </dl>
             <hr />
             <h2>Provinces</h2>

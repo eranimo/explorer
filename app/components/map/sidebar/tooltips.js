@@ -17,31 +17,29 @@ export class PopulationChartTooltip extends Component {
   }
 }
 
-export class EconomicChartTooltip extends Component {
-  render () {
-    const value1 = this.props.payload[0].value;
-    const value2 = this.props.payload[1].value;
-    const value3 = this.props.payload[2].value;
+export function AggregateTooltip(series) {
+  return ({ payload, label, tickFormatter }) => {
+    const sortedPayload = _.orderBy(payload, 'value', 'desc');
     return (
       <div>
-        <span style={{backgroundColor: '#333', color: '#DDD', fontWeight: 'bold', fontSize: '10px'}}>
-          {convertToMoment(this.props.label).format('LL')}
+        <span style={{ backgroundColor: '#333', color: '#DDD', fontWeight: 'bold', fontSize: '10px' }}>
+          {convertToMoment(label).format('LL')}
         </span>
         <br />
-        <span style={{backgroundColor: '#333', color: '#08CC08', fontSize: '14px'}}>
-          {!_.isUndefined(value1) ? this.props.tickFormatter(value1) : ''}
-        </span>
-        <br />
-        <span style={{backgroundColor: '#333', color: 'red', fontSize: '14px'}}>
-          {!_.isUndefined(value2) ? this.props.tickFormatter(value2) : ''}
-        </span>
-        <br />
-        <span style={{backgroundColor: '#333', color: 'lightblue', fontSize: '14px'}}>
-          {!_.isUndefined(value3) ? this.props.tickFormatter(value3) : ''}
-        </span>
+        {sortedPayload.map(({ color, value }, index) => {
+          return [
+            <span
+              key={index}
+              style={{ backgroundColor: '#333', color, fontSize: '14px' }}
+            >
+              {value ? tickFormatter(value) : ''}
+            </span>,
+            <br />
+          ];
+        })}
       </div>
     );
-  }
+  };
 }
 
 export class JobChartTooltip extends Component {

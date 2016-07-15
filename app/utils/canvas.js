@@ -103,3 +103,15 @@ export function pointInTriangle(p, p0, p1, p2) {
 
   return s > 0 && t > 0 && (s + t) < 2 * A * sign;
 }
+
+
+export function array2D(size, value) {
+  const grid = [];
+  for (let i = 0; i < size; i++) {
+    grid[i] = [];
+    for (let j = 0; j < size; j++) {
+      grid[i][j] = value;
+    }
+  }
+  return grid;
+}

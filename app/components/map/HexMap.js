@@ -79,7 +79,7 @@ export default class HexMap {
   // get a cell object
   // cx and cy: X and Y index inside grid
   getCell(cx, cy) {
-    // origin points: relative to screen
+    // origin points: relative to board origin (top left of map)
     const originX = cy * this.HEXRECTWIDTH + ((cx % 2) * this.HEXRADIUS);
     const originY = cx * (this.SIDELENGTH + this.HEXHEIGHT);
 
@@ -92,9 +92,17 @@ export default class HexMap {
     return { originX, originY, screenX, screenY, cx, cy, hex };
   }
 
+  *allHexes() {
+    for (let cy = 0; cy < this.size; ++cy) {
+      for (let cx = 0; cx < this.size; ++cx) {
+        yield this.getCell(cx, cy);
+      }
+    }
+  }
+
   // loop over all hexes that are visible right now
   // Returns a generator
-  *forAllVisibleHexes() {
+  *allVisibleHexes() {
     const visible = this.getVisibleArea();
     for (let cy = visible.x1; cy < visible.x2; ++cy) {
       for (let cx = visible.y1; cx < visible.y2; ++cx) {

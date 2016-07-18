@@ -345,29 +345,18 @@ export default class WorldMap extends HexMap {
       canvasData.data[index + 3] = a;
     }
 
-    function updateCanvas() {
-      mctx.putImageData(canvasData, 0, 0);
-    }
-    for (let i = 0; i < this.size; i++) {
-      for (let j = 0; j < this.size; j++) {
-        const cell = this.grid[j][i];
-        if (cell) {
-          const foundProvince = this.findProvince(cell);
-          let pcolor;
-          if (foundProvince) {
-            pcolor = hexToRgb(foundProvince.owner.display.map_color);
-            drawPixel(i, j, pcolor.r, pcolor.g, pcolor.b, 255);
-          } else {
-            pcolor = cell.colors[this.mapView.map];
-            drawPixel(i, j, pcolor[0], pcolor[1], pcolor[2], 255);
-          }
-        } else {
-          drawPixel(i, j, 0, 0, 0, 255);
-        }
+    for (const { hex, cx, cy } of this.allHexes()) {
+      const foundProvince = this.findProvince(hex);
+      if (foundProvince) {
+        const pcolor = hexToRgb(foundProvince.owner.display.map_color);
+        drawPixel(cy, cx, pcolor.r, pcolor.g, pcolor.b, 255);
+      } else {
+        const pcolor = hex.colors[this.mapView.map];
+        drawPixel(cy, cx, pcolor[0], pcolor[1], pcolor[2], 255);
       }
     }
     this.drawMinimapFrame();
-    updateCanvas();
+    mctx.putImageData(canvasData, 0, 0);
   }
 
   // draw minimap frame which shows you where you are
@@ -405,7 +394,7 @@ export default class WorldMap extends HexMap {
       };
     });
 
-    for (const { hex } of this.forAllVisibleHexes()) {
+    for (const { hex } of this.allVisibleHexes()) {
       const province = this.findProvince(hex);
       if (province) {
         // console.log(hex);
@@ -564,14 +553,14 @@ export default class WorldMap extends HexMap {
    * Draws the main world map
    */
   drawMain() {
-    for (const props of this.forAllVisibleHexes()) {
+    for (const props of this.allVisibleHexes()) {
       this.drawHexagon(props);
     }
 
     this.drawCountryBorders();
 
     if (this.mapView.rivers || this.mapView.borders) {
-      for (const props of this.forAllVisibleHexes()) {
+      for (const props of this.allVisibleHexes()) {
         this.drawEdges(props);
       }
     }

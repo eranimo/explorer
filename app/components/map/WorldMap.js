@@ -78,35 +78,6 @@ export default class WorldMap extends HexMap {
     // compute province borders
     this.country_borders = {};
 
-    this.pointOffset = this.r(10);
-    this.hexPointInner = {
-      north: [
-        0, this.pointOffset
-      ],
-      north_east: [
-        -Math.cos(this.HEXAGONANGLE) * this.pointOffset,
-        Math.tan(this.HEXAGONANGLE) * (Math.cos(this.HEXAGONANGLE) * this.pointOffset)
-      ],
-      south_east: [
-        -Math.cos(this.HEXAGONANGLE) * this.pointOffset,
-        -Math.tan(this.HEXAGONANGLE) * (Math.cos(this.HEXAGONANGLE) * this.pointOffset)
-      ],
-      south: [
-        0, -this.pointOffset
-      ],
-      south_west: [
-        Math.cos(this.HEXAGONANGLE) * this.pointOffset,
-        -Math.tan(this.HEXAGONANGLE) * (Math.cos(this.HEXAGONANGLE) * this.pointOffset)
-      ],
-      north_west: [
-        Math.cos(this.HEXAGONANGLE) * this.pointOffset,
-        Math.tan(this.HEXAGONANGLE) * (Math.cos(this.HEXAGONANGLE) * this.pointOffset)
-      ]
-    };
-
-    this.mapWidth = this.BOARDWIDTH * this.HEXRECTWIDTH + ((this.BOARDHEIGHT % 2) * this.HEXRADIUS);
-    this.mapHeight = this.BOARDHEIGHT * (this.SIDELENGTH + this.HEXHEIGHT);
-
     // events
     this.canvas.elem.css('cursor', 'pointer');
     this.politicalMap.elem.css('cursor', 'pointer');
@@ -483,16 +454,22 @@ export default class WorldMap extends HexMap {
       ctx.strokeStyle = 'rgb(0, 0, 0)';
       ctx.moveTo(north[0], north[1] + offset);
       ctx.lineTo(north_east[0] - offset, north_east[1]);
+
       ctx.moveTo(north_east[0] - offset, north_east[1]);
       ctx.lineTo(south_east[0] - offset, south_east[1]);
+
       ctx.moveTo(south_east[0] - offset, south_east[1]);
       ctx.lineTo(south[0], south[1] - offset);
+
       ctx.moveTo(south[0], south[1] - offset);
       ctx.lineTo(south_west[0] + offset, south_west[1]);
+
       ctx.moveTo(south_west[0] + offset, south_west[1]);
       ctx.lineTo(north_west[0] + offset, north_west[1]);
+
       ctx.moveTo(north_west[0] + offset, north_west[1]);
       ctx.lineTo(north[0], north[1] + offset);
+
       ctx.stroke();
       ctx.closePath();
       ctx.setLineDash([0, 0]);
@@ -728,85 +705,87 @@ export default class WorldMap extends HexMap {
     if (hex !== null) {
       // var width = settings.border_color_width;
 
+      const coastLineWidth = 2;
+      const baseLineWidth = 0.1;
 
       ctx.beginPath();
       // north east
       if (hex.edges.north_east.is_coast && view.borders) {
-        ctx.lineWidth = 2;
+        ctx.lineWidth = coastLineWidth;
         ctx.strokeStyle = borderColor;
-        ctx.moveTo(north[0], north[1]);
-        ctx.lineTo(north_east[0], north_east[1]);
       } else if (hex.edges.north_east.is_river && view.rivers) {
         ctx.lineWidth = this.r(2.5);
         ctx.strokeStyle = `rgb(${color.rivers})`;
-        ctx.moveTo(north[0], north[1]);
-        ctx.lineTo(north_east[0], north_east[1]);
+      } else {
+        ctx.lineWidth = baseLineWidth;
       }
+      ctx.moveTo(north[0], north[1]);
+      ctx.lineTo(north_east[0], north_east[1]);
 
       // east
       if (hex.edges.east.is_coast && view.borders) {
-        ctx.lineWidth = 2;
+        ctx.lineWidth = coastLineWidth;
         ctx.strokeStyle = borderColor;
-        ctx.moveTo(north_east[0], north_east[1]);
-        ctx.lineTo(south_east[0], south_east[1]);
       } else if (hex.edges.east.is_river && view.rivers) {
         ctx.lineWidth = this.r(2.5);
         ctx.strokeStyle = `rgb(${color.rivers})`;
-        ctx.moveTo(north_east[0], north_east[1]);
-        ctx.lineTo(south_east[0], south_east[1]);
+      } else {
+        ctx.lineWidth = baseLineWidth;
       }
+      ctx.moveTo(north_east[0], north_east[1]);
+      ctx.lineTo(south_east[0], south_east[1]);
 
       // south east
       if (hex.edges.south_east.is_coast && view.borders) {
-        ctx.lineWidth = 2;
+        ctx.lineWidth = coastLineWidth;
         ctx.strokeStyle = borderColor;
-        ctx.moveTo(south_east[0], south_east[1]);
-        ctx.lineTo(south[0], south[1]);
       } else if (hex.edges.south_east.is_river && view.rivers) {
         ctx.lineWidth = this.r(2.5);
         ctx.strokeStyle = `rgb(${color.rivers})`;
-        ctx.moveTo(south_east[0], south_east[1]);
-        ctx.lineTo(south[0], south[1]);
+      } else {
+        ctx.lineWidth = baseLineWidth;
       }
+      ctx.moveTo(south_east[0], south_east[1]);
+      ctx.lineTo(south[0], south[1]);
 
       // south west
       if (hex.edges.south_west.is_coast && view.borders) {
-        ctx.lineWidth = 2;
+        ctx.lineWidth = coastLineWidth;
         ctx.strokeStyle = borderColor;
-        ctx.moveTo(south[0], south[1]);
-        ctx.lineTo(south_west[0], south_west[1]);
       } else if (hex.edges.south_west.is_river && view.rivers) {
         ctx.lineWidth = this.r(2.5);
         ctx.strokeStyle = `rgb(${color.rivers})`;
-        ctx.moveTo(south[0], south[1]);
-        ctx.lineTo(south_west[0], south_west[1]);
+      } else {
+        ctx.lineWidth = baseLineWidth;
       }
+      ctx.moveTo(south[0], south[1]);
+      ctx.lineTo(south_west[0], south_west[1]);
 
       // west
       if (hex.edges.west.is_coast && view.borders) {
-        ctx.lineWidth = 2;
+        ctx.lineWidth = coastLineWidth;
         ctx.strokeStyle = borderColor;
-        ctx.moveTo(south_west[0], south_west[1]);
-        ctx.lineTo(north_west[0], north_west[1]);
       } else if (hex.edges.west.is_river && view.rivers) {
         ctx.lineWidth = this.r(2.5);
         ctx.strokeStyle = `rgb(${color.rivers})`;
-        ctx.moveTo(south_west[0], south_west[1]);
-        ctx.lineTo(north_west[0], north_west[1]);
+      } else {
+        ctx.lineWidth = baseLineWidth;
       }
+      ctx.moveTo(south_west[0], south_west[1]);
+      ctx.lineTo(north_west[0], north_west[1]);
 
       // north west
       if (hex.edges.north_west.is_coast && view.borders) {
-        ctx.lineWidth = 2;
+        ctx.lineWidth = coastLineWidth;
         ctx.strokeStyle = borderColor;
-        ctx.moveTo(north_west[0], north_west[1]);
-        ctx.lineTo(north[0], north[1]);
       } else if (hex.edges.north_west.is_river && view.rivers) {
         ctx.lineWidth = this.r(2.5);
         ctx.strokeStyle = `rgb(${color.rivers})`;
-        ctx.moveTo(north_west[0], north_west[1]);
-        ctx.lineTo(north[0], north[1]);
+      } else {
+        ctx.lineWidth = baseLineWidth;
       }
+      ctx.moveTo(north_west[0], north_west[1]);
+      ctx.lineTo(north[0], north[1]);
 
       ctx.stroke();
       ctx.closePath();

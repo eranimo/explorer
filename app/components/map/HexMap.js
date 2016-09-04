@@ -1,5 +1,10 @@
 import { midPoint, array2D } from 'utils/canvas'; // eslint-disable-line
+import HexSide from './HexSide';
 
+window.HexSide = HexSide;
+for (const i of HexSide) {
+  console.log(i);
+}
 
 /* An representation of a Hexagon grid map
  * Does not know about the browser or any canvas
@@ -34,6 +39,35 @@ export default class HexMap {
     this.HEXRADIUS = Math.cos(this.HEXAGONANGLE) * this.SIDELENGTH;
     this.HEXRECTHEIGHT = this.SIDELENGTH + 2 * this.HEXHEIGHT;
     this.HEXRECTWIDTH = 2 * this.HEXRADIUS;
+
+    this.mapWidth = this.BOARDWIDTH * this.HEXRECTWIDTH + ((this.BOARDHEIGHT % 2) * this.HEXRADIUS);
+    this.mapHeight = this.BOARDHEIGHT * (this.SIDELENGTH + this.HEXHEIGHT);
+
+    this.pointOffset = this.r(10);
+    this.hexPointInner = {
+      north: [
+        0, this.pointOffset
+      ],
+      north_east: [
+        -Math.cos(this.HEXAGONANGLE) * this.pointOffset,
+        Math.tan(this.HEXAGONANGLE) * (Math.cos(this.HEXAGONANGLE) * this.pointOffset)
+      ],
+      south_east: [
+        -Math.cos(this.HEXAGONANGLE) * this.pointOffset,
+        -Math.tan(this.HEXAGONANGLE) * (Math.cos(this.HEXAGONANGLE) * this.pointOffset)
+      ],
+      south: [
+        0, -this.pointOffset
+      ],
+      south_west: [
+        Math.cos(this.HEXAGONANGLE) * this.pointOffset,
+        -Math.tan(this.HEXAGONANGLE) * (Math.cos(this.HEXAGONANGLE) * this.pointOffset)
+      ],
+      north_west: [
+        Math.cos(this.HEXAGONANGLE) * this.pointOffset,
+        Math.tan(this.HEXAGONANGLE) * (Math.cos(this.HEXAGONANGLE) * this.pointOffset)
+      ]
+    };
   }
 
   /**

@@ -1,6 +1,11 @@
 # Explorer
 An [Electron](http://electron.atom.io/) application for viewing [Historia](https://github.com/eranimo/historia) files
 
+Consists of a few parts:
+- a world map that you can pan and zoom
+- time controls that allow you to browse through the Historia history
+- detailed view describing the pops at each province, how successful they are, what they produced and traded, and who they are trading with. Also shows charts detailing the progress of the similation in a variety of metrics.
+
 ## Installation
 
 ### Development
@@ -14,3 +19,7 @@ An [Electron](http://electron.atom.io/) application for viewing [Historia](https
 1. Run `npm run build`
 1. Run `npm run package` (to package for your current os)
 or run `npm run package-all` to package for all operating systems.
+
+
+## Screenshots
+http://imgur.com/a/GjKFI
